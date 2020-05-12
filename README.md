@@ -6,6 +6,8 @@ It's still in alpha.
 
 See pom.xml file for more details.
 
+![Java CI with Maven](https://github.com/hdsdi3g/codepolicyvalidation/workflows/Java%20CI%20with%20Maven/badge.svg)
+
 ## Setup
 
 Add in your pom file:
