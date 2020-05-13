@@ -5,7 +5,7 @@
 	<groupId>tv.hd3g.commons</groupId>
 	<artifactId>codepolicyvalidation</artifactId>
 	<packaging>jar</packaging>
-	<version>0.0.1</version>
+	<version>0.0.2-SNAPSHOT</version>
 
 	<name>CodePolicyValidation</name>
 	<url>https://github.com/hdsdi3g/codepolicyvalidation</url>
