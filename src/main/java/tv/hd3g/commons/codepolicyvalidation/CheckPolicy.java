@@ -19,6 +19,7 @@ package tv.hd3g.commons.codepolicyvalidation;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,20 +49,20 @@ import spoon.reflect.visitor.filter.AbstractFilter;
 
 public class CheckPolicy {
 
-	private static final TypeFactory typeFactory = new TypeFactory();
+	public static final TypeFactory typeFactory = new TypeFactory();
 
-	private static Launcher launcher;
-	private static Map<CtTypeReference<?>, Set<? extends CtType<?>>> classesByImported;
+	public static Launcher launcher;
+	public static Map<CtTypeReference<?>, Set<? extends CtType<?>>> classesByImported;
 
 	/**
 	 * Scan in "this" src/main/java and src/test/java
 	 */
 	@BeforeAll
-	static void globalInit() {
+	public static void globalInit() {
 		globalInit("src/main/java", "src/test/java");
 	}
 
-	static void globalInit(final String... inputResources) {
+	public static void globalInit(final String... inputResources) {
 		launcher = new Launcher();
 		for (int i = 0; i < inputResources.length; i++) {
 			launcher.addInputResource(inputResources[i]);
@@ -80,13 +81,13 @@ public class CheckPolicy {
 		        .collect(Collectors.toUnmodifiableMap(k -> k,
 		                v -> importedByClasses.entrySet().stream()
 		                        .filter(entry -> entry.getValue().contains(v))
-		                        .map(entry -> entry.getKey())
+		                        .map(Entry::getKey)
 		                        .distinct()
 		                        .collect(Collectors.toSet())));
 	}
 
 	@Test
-	void noIllegalArgumentExceptionWOConstructor() {
+	public void noIllegalArgumentExceptionWOConstructor() {
 		final var typeIAException = typeFactory.get(IllegalArgumentException.class);
 		final var list = launcher.getFactory().Package().getRootPackage().getElements(
 		        new AbstractFilter<CtConstructorCall<?>>() {
@@ -110,7 +111,7 @@ public class CheckPolicy {
 	}
 
 	@Test
-	void noSysOutSysErr() {
+	public void noSysOutSysErr() {
 		final var list = launcher.getFactory().Package().getRootPackage().getElements(
 		        new AbstractFilter<CtInvocation<?>>() {
 			        @Override
@@ -134,7 +135,7 @@ public class CheckPolicy {
 	}
 
 	@Test
-	void noPrintStackTrace() {
+	public void noPrintStackTrace() {
 		final var typeThrowable = typeFactory.get(Throwable.class).getReference();
 
 		final var list = launcher.getFactory().Package().getRootPackage().getElements(
@@ -155,7 +156,7 @@ public class CheckPolicy {
 	}
 
 	@Test
-	void xToOneMustToSetOptional() {
+	public void xToOneMustToSetOptional() {
 		final var typeManyToOne = typeFactory.get(ManyToOne.class).getReference();
 		final var typeOneToOne = typeFactory.get(OneToOne.class).getReference();
 
@@ -179,7 +180,7 @@ public class CheckPolicy {
 	}
 
 	@Test
-	void xToManyMustNotUseEAGER() {
+	public void xToManyMustNotUseEAGER() {
 		final var typeOneToMany = typeFactory.get(OneToMany.class).getReference();
 		final var typeManyToMany = typeFactory.get(ManyToMany.class).getReference();
 
@@ -207,7 +208,7 @@ public class CheckPolicy {
 	}
 
 	@Test
-	void noSuppressWarnings() {
+	public void noSuppressWarnings() {
 		final var typeSuppressWarnings = typeFactory.get(SuppressWarnings.class).getReference();
 
 		final var list = launcher.getFactory().Package().getRootPackage().getElements(
@@ -228,7 +229,7 @@ public class CheckPolicy {
 	}
 
 	@Test
-	void noRuntimeException() {
+	public void noRuntimeException() {
 		final var typeRuntimeException = typeFactory.get(RuntimeException.class).getReference();
 
 		final var list = launcher.getFactory().Package().getRootPackage().getElements(
@@ -248,7 +249,7 @@ public class CheckPolicy {
 	}
 
 	@Test
-	void noNullPointerException() {
+	public void noNullPointerException() {
 		final var typeNullPointerException = typeFactory.get(NullPointerException.class).getReference();
 
 		final var list = launcher.getFactory().Package().getRootPackage().getElements(
@@ -267,7 +268,7 @@ public class CheckPolicy {
 		        .collect(Collectors.joining(System.lineSeparator())));
 	}
 
-	private String mapPathElementToString(final CtElement element) {
+	public static String mapPathElementToString(final CtElement element) {
 		final var path = element.getPath();
 		if (path instanceof CtPathImpl == false) {
 			return path.toString();
@@ -297,41 +298,41 @@ public class CheckPolicy {
 	}
 
 	@Test
-	void notOldJunitAssert() {
+	public void notOldJunitAssert() {
 		checkClassNotPresent("org.junit.Assert", "Don't use old Junit Assert");
 	}
 
 	@Test
-	void notOldJunitRunner() {
+	public void notOldJunitRunner() {
 		checkClassNotPresent("org.junit.runner", "Don't use old Junit Runner");
 	}
 
 	@Test
-	void notOldJunit() {
+	public void notOldJunit() {
 		checkClassNotPresent("org.junit.Test", "Don't use old Junit Test");
 	}
 
 	@Test
-	void notJunitFramework() {
+	public void notJunitFramework() {
 		checkClassNotPresent("junit.framework", "Don't use Junit internal classes");
 	}
 
 	@Test
-	void notSQLDate() {
+	public void notSQLDate() {
 		checkClassNotPresent("java.sql.Date", "Don't use SQL date");
 	}
 
 	@Test
-	void notCommonsLang2_use3() {
+	public void notCommonsLang2_use3() {
 		checkClassNotPresent("org.apache.commons.lang.", "Use commons lang 3");
 	}
 
 	@Test
-	void notCommonsCollection3_use4() {
+	public void notCommonsCollection3_use4() {
 		checkClassNotPresent("org.apache.commons.collections.", "Use commons collection 4");
 	}
 
-	private void checkClassNotPresent(final String classBaseName, final String reason) {
+	public static void checkClassNotPresent(final String classBaseName, final String reason) {
 		final var classesWithBadImports = classesByImported.keySet().stream()
 		        .filter(cl -> cl.getQualifiedName().startsWith(classBaseName))
 		        .flatMap(cl -> classesByImported.get(cl).stream()
