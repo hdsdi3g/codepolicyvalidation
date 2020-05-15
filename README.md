@@ -8,6 +8,8 @@ See pom.xml file for more details.
 
 ![Java CI with Maven](https://github.com/hdsdi3g/codepolicyvalidation/workflows/Java%20CI%20with%20Maven/badge.svg)
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=hdsdi3g_codepolicyvalidation&metric=alert_status)](https://sonarcloud.io/dashboard?id=hdsdi3g_codepolicyvalidation)
+
 ## Setup
 
 Add in your pom file:
