@@ -16,6 +16,8 @@
  */
 package tv.hd3g.commons.codepolicyvalidation;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -33,17 +35,17 @@ class CheckPolicyOkTest {
 
 	@Test
 	void testNoIllegalArgumentExceptionWOConstructor() {
-		checkPolicy.noIllegalArgumentExceptionWOConstructor();
+		assertTrue(checkPolicy.noIllegalArgumentExceptionWOConstructor());
 	}
 
 	@Test
 	void testXToOneMustToSetOptional() {
-		checkPolicy.xToOneMustToSetOptional();
+		assertTrue(checkPolicy.xToOneMustToSetOptional());
 	}
 
 	@Test
 	void testXToManyMustNotUseEAGER() {
-		checkPolicy.xToManyMustNotUseEAGER();
+		assertTrue(checkPolicy.xToManyMustNotUseEAGER());
 	}
 
 }

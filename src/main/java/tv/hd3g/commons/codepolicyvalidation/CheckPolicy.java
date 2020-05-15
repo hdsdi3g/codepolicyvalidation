@@ -51,8 +51,8 @@ public class CheckPolicy {
 
 	public static final TypeFactory typeFactory = new TypeFactory();
 
-	public static Launcher launcher;
-	public static Map<CtTypeReference<?>, Set<? extends CtType<?>>> classesByImported;
+	public static final Launcher launcher = new Launcher();
+	private static Map<CtTypeReference<?>, Set<? extends CtType<?>>> classesByImported;
 
 	/**
 	 * Scan in "this" src/main/java and src/test/java
@@ -63,7 +63,6 @@ public class CheckPolicy {
 	}
 
 	public static void globalInit(final String... inputResources) {
-		launcher = new Launcher();
 		for (int i = 0; i < inputResources.length; i++) {
 			launcher.addInputResource(inputResources[i]);
 		}
@@ -87,7 +86,7 @@ public class CheckPolicy {
 	}
 
 	@Test
-	public void noIllegalArgumentExceptionWOConstructor() {
+	public boolean noIllegalArgumentExceptionWOConstructor() {
 		final var typeIAException = typeFactory.get(IllegalArgumentException.class);
 		final var list = launcher.getFactory().Package().getRootPackage().getElements(
 		        new AbstractFilter<CtConstructorCall<?>>() {
@@ -100,7 +99,7 @@ public class CheckPolicy {
 			        }
 		        });
 		if (list.isEmpty()) {
-			return;
+			return true;
 		}
 
 		fail(list.stream().map(l -> "Don't use "
@@ -108,6 +107,7 @@ public class CheckPolicy {
 		                            + " without message in "
 		                            + mapPathElementToString(l))
 		        .collect(Collectors.joining(System.lineSeparator())));
+		return false;
 	}
 
 	@Test
@@ -156,7 +156,7 @@ public class CheckPolicy {
 	}
 
 	@Test
-	public void xToOneMustToSetOptional() {
+	public boolean xToOneMustToSetOptional() {
 		final var typeManyToOne = typeFactory.get(ManyToOne.class).getReference();
 		final var typeOneToOne = typeFactory.get(OneToOne.class).getReference();
 
@@ -173,14 +173,15 @@ public class CheckPolicy {
 			        }
 		        });
 		if (list.isEmpty()) {
-			return;
+			return true;
 		}
 		fail(list.stream().map(l -> "You must set ToOne with optional in " + mapPathElementToString(l.getParent()))
 		        .distinct().collect(Collectors.joining(System.lineSeparator())));
+		return false;
 	}
 
 	@Test
-	public void xToManyMustNotUseEAGER() {
+	public boolean xToManyMustNotUseEAGER() {
 		final var typeOneToMany = typeFactory.get(OneToMany.class).getReference();
 		final var typeManyToMany = typeFactory.get(ManyToMany.class).getReference();
 
@@ -201,10 +202,11 @@ public class CheckPolicy {
 			        }
 		        });
 		if (list.isEmpty()) {
-			return;
+			return true;
 		}
 		fail(list.stream().map(l -> "You must set ToMany with not EAGER in " + mapPathElementToString(l.getParent()))
 		        .distinct().collect(Collectors.joining(System.lineSeparator())));
+		return false;
 	}
 
 	@Test
@@ -323,12 +325,12 @@ public class CheckPolicy {
 	}
 
 	@Test
-	public void notCommonsLang2_use3() {
+	public void notCommonsLang2Use3() {
 		checkClassNotPresent("org.apache.commons.lang.", "Use commons lang 3");
 	}
 
 	@Test
-	public void notCommonsCollection3_use4() {
+	public void notCommonsCollection3Use4() {
 		checkClassNotPresent("org.apache.commons.collections.", "Use commons collection 4");
 	}
 

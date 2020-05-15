@@ -112,13 +112,13 @@ class CheckPolicyKoTest {
 	@Test
 	void testNotCommonsLang2_use3() {
 		Assertions.assertThrows(BadImportClass.class,
-		        () -> checkPolicy.notCommonsLang2_use3());
+		        () -> checkPolicy.notCommonsLang2Use3());
 	}
 
 	@Test
 	void testNotCommonsCollection3_use4() {
 		Assertions.assertThrows(BadImportClass.class,
-		        () -> checkPolicy.notCommonsCollection3_use4());
+		        () -> checkPolicy.notCommonsCollection3Use4());
 	}
 
 }

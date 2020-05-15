@@ -46,7 +46,7 @@ class BadClass {
 	@Test
 	@SuppressWarnings("unused")
 	void a() {
-		assertEquals(0, 0);
+		assertEquals(0, 0);// NOSONAR
 		new Result();
 		new ThisClassIsFromAnOlderPackage();
 		final Date a;
