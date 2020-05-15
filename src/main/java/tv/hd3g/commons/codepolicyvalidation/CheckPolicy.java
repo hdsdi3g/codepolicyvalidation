@@ -51,7 +51,7 @@ public class CheckPolicy {
 
 	public static final TypeFactory typeFactory = new TypeFactory();
 
-	public static final Launcher launcher = new Launcher();
+	private static Launcher launcher;
 	private static Map<CtTypeReference<?>, Set<? extends CtType<?>>> classesByImported;
 
 	/**
@@ -63,6 +63,7 @@ public class CheckPolicy {
 	}
 
 	public static void globalInit(final String... inputResources) {
+		launcher = new Launcher();
 		for (int i = 0; i < inputResources.length; i++) {
 			launcher.addInputResource(inputResources[i]);
 		}
