@@ -48,4 +48,9 @@ class CheckPolicyOkTest {
 		assertTrue(checkPolicy.xToManyMustNotUseEAGER());
 	}
 
+	@Test
+	void testOkPrintStackTrace_with_PrintStream_Or_PrintWriter() {
+		assertTrue(checkPolicy.printStackTrace());
+	}
+
 }

@@ -18,6 +18,10 @@ package tv.hd3g.commons.codepolicyvalidation.ok;
 
 import static javax.persistence.FetchType.LAZY;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
@@ -35,6 +39,24 @@ class GoodClass {
 
 	void a() {
 		throw new IllegalArgumentException("This is an argument");
+	}
+
+	void b_PS() {
+		try {
+		} catch (final NullPointerException e) {
+			final var out = new ByteArrayOutputStream(0xFFF);
+			final var ps = new PrintStream(out);
+			e.printStackTrace(ps);
+		}
+	}
+
+	void b_PW() {
+		try {
+		} catch (final NullPointerException e) {
+			final var out = new ByteArrayOutputStream(0xFFF);
+			final var pw = new PrintWriter(out);
+			e.printStackTrace(pw);
+		}
 	}
 
 }

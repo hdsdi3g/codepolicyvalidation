@@ -136,24 +136,36 @@ public class CheckPolicy {
 	}
 
 	@Test
-	public void noPrintStackTrace() {
+	public boolean printStackTrace() {
 		final var typeThrowable = typeFactory.get(Throwable.class).getReference();
 
 		final var list = launcher.getFactory().Package().getRootPackage().getElements(
 		        new AbstractFilter<CtExecutableReference<?>>() {
 			        @Override
 			        public boolean matches(final CtExecutableReference<?> element) {
-				        if (element.getReferencedTypes().contains(typeThrowable) == false) {
+				        if (element.getReferencedTypes().contains(typeThrowable) == false
+				            || element.getSimpleName().equals("printStackTrace") == false) {
 					        return false;
 				        }
-				        return element.getSimpleName().equals("printStackTrace");
+				        /**
+				         * @return false (good) for printStackTrace(printstream) or printStackTrace(printwriter)
+				         *         else true (bad)
+				         */
+				        final var param = element.getParameters();
+				        if (param == null || param.isEmpty()) {
+					        return true;
+				        }
+				        final var paramSimpleName = param.get(0).getSimpleName();
+				        return "printstream".equalsIgnoreCase(paramSimpleName) == false
+				               && "printwriter".equalsIgnoreCase(paramSimpleName) == false;
 			        }
 		        });
 		if (list.isEmpty()) {
-			return;
+			return true;
 		}
 		fail(list.stream().map(l -> "Don't use printStackTrace in " + mapPathElementToString(l.getParent()))
 		        .collect(Collectors.joining(System.lineSeparator())));
+		return false;
 	}
 
 	@Test
