@@ -43,7 +43,7 @@ class BadClass {
 	@OneToOne
 	private String var2;
 
-	@Test
+	@Test // NOSONAR
 	@SuppressWarnings("unused")
 	void a() {
 		assertEquals(0, 0);// NOSONAR
