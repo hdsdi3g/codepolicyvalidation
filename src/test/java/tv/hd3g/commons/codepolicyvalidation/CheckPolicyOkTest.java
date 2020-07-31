@@ -16,6 +16,7 @@
  */
 package tv.hd3g.commons.codepolicyvalidation;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -34,23 +35,36 @@ class CheckPolicyOkTest {
 	}
 
 	@Test
-	void testNoIllegalArgumentExceptionWOConstructor() {
-		assertTrue(checkPolicy.noIllegalArgumentExceptionWOConstructor());
+	void testNoIllegalArgumentExceptionWOConstructor() {// NOSONAR S2699
+		checkPolicy.noIllegalArgumentExceptionWOConstructor();
 	}
 
 	@Test
-	void testXToOneMustToSetOptional() {
-		assertTrue(checkPolicy.xToOneMustToSetOptional());
+	void testXToOneMustToSetOptional() {// NOSONAR S2699
+		checkPolicy.xToOneMustToSetOptional();
 	}
 
 	@Test
-	void testXToManyMustNotUseEAGER() {
-		assertTrue(checkPolicy.xToManyMustNotUseEAGER());
+	void testXToManyMustNotUseEAGER() {// NOSONAR S2699
+		checkPolicy.xToManyMustNotUseEAGER();
 	}
 
 	@Test
-	void testOkPrintStackTrace_with_PrintStream_Or_PrintWriter() {
-		assertTrue(checkPolicy.printStackTrace());
+	void testOkPrintStackTrace_with_PrintStream_Or_PrintWriter() {// NOSONAR S2699
+		checkPolicy.noSimplePrintStackTrace();
+	}
+
+	@Test
+	void ensureContainInPackageName() {
+		assertTrue(CheckPolicy.ensureContainInPackageName("cc", "cc"));
+		assertTrue(CheckPolicy.ensureContainInPackageName("zzzcc", "cc"));
+		assertTrue(CheckPolicy.ensureContainInPackageName("cczzz", "cc"));
+		assertFalse(CheckPolicy.ensureContainInPackageName("zzzcczzz", "cc"));
+
+		assertTrue(CheckPolicy.ensureContainInPackageName("aa.bb.cc", "cc"));
+		assertTrue(CheckPolicy.ensureContainInPackageName("aa.bb.zzzcc", "cc"));
+		assertTrue(CheckPolicy.ensureContainInPackageName("aa.bb.cczzz", "cc"));
+		assertFalse(CheckPolicy.ensureContainInPackageName("aa.bb.zzzcczzz", "cc"));
 	}
 
 }

@@ -46,7 +46,7 @@ class CheckPolicyKoTest {
 	@Test
 	void testNoPrintStackTrace() {
 		Assertions.assertThrows(AssertionFailedError.class,
-		        () -> checkPolicy.printStackTrace());
+		        () -> checkPolicy.noSimplePrintStackTrace());
 	}
 
 	@Test

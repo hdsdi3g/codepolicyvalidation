@@ -16,11 +16,19 @@
  */
 package tv.hd3g.commons.codepolicyvalidation;
 
+import static java.util.stream.Collectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableSet;
 import static org.junit.jupiter.api.Assertions.fail;
+import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.CLASS;
+import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.INTERFACE;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.persistence.ManyToMany;
@@ -38,7 +46,10 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtThrow;
 import spoon.reflect.declaration.CtAnnotation;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtModifiable;
+import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtType;
+import spoon.reflect.declaration.CtTypeInformation;
 import spoon.reflect.factory.TypeFactory;
 import spoon.reflect.path.CtRole;
 import spoon.reflect.path.impl.CtPathImpl;
@@ -46,8 +57,21 @@ import spoon.reflect.path.impl.CtRolePathElement;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.AbstractFilter;
+import spoon.support.reflect.declaration.CtClassImpl;
+import spoon.support.reflect.declaration.CtInterfaceImpl;
+import spoon.support.reflect.declaration.CtPackageImpl;
 
 public class CheckPolicy {
+
+	private static final String CONTROLLER_ANNOTATION_NAME = "org.springframework.stereotype.Controller";
+	private static final String ENTITY_ANNOTATION_NAME = "javax.persistence.Entity";
+	private static final String REPOSITORY_ANNOTATION_NAME = "org.springframework.stereotype.Repository";
+	private static final String SERVICE_ANNOTATION_NAME = "org.springframework.stereotype.Service";
+
+	private static final String CONTROLLER_BASE_PKG = "controller";
+	private static final String ENTITY_BASE_PKG = "entity";
+	private static final String REPOSITORY_BASE_PKG = "repository";
+	private static final String SERVICE_BASE_PKG = "service";
 
 	public static final TypeFactory typeFactory = new TypeFactory();
 
@@ -87,7 +111,7 @@ public class CheckPolicy {
 	}
 
 	@Test
-	public boolean noIllegalArgumentExceptionWOConstructor() {
+	public void noIllegalArgumentExceptionWOConstructor() {
 		final var typeIAException = typeFactory.get(IllegalArgumentException.class);
 		final var list = launcher.getFactory().Package().getRootPackage().getElements(
 		        new AbstractFilter<CtConstructorCall<?>>() {
@@ -100,15 +124,13 @@ public class CheckPolicy {
 			        }
 		        });
 		if (list.isEmpty()) {
-			return true;
+			return;
 		}
-
 		fail(list.stream().map(l -> "Don't use "
 		                            + l.getType().getQualifiedName()
 		                            + " without message in "
 		                            + mapPathElementToString(l))
 		        .collect(Collectors.joining(System.lineSeparator())));
-		return false;
 	}
 
 	@Test
@@ -136,7 +158,7 @@ public class CheckPolicy {
 	}
 
 	@Test
-	public boolean printStackTrace() {
+	public void noSimplePrintStackTrace() {
 		final var typeThrowable = typeFactory.get(Throwable.class).getReference();
 
 		final var list = launcher.getFactory().Package().getRootPackage().getElements(
@@ -161,15 +183,14 @@ public class CheckPolicy {
 			        }
 		        });
 		if (list.isEmpty()) {
-			return true;
+			return;
 		}
 		fail(list.stream().map(l -> "Don't use printStackTrace in " + mapPathElementToString(l.getParent()))
 		        .collect(Collectors.joining(System.lineSeparator())));
-		return false;
 	}
 
 	@Test
-	public boolean xToOneMustToSetOptional() {
+	public void xToOneMustToSetOptional() {
 		final var typeManyToOne = typeFactory.get(ManyToOne.class).getReference();
 		final var typeOneToOne = typeFactory.get(OneToOne.class).getReference();
 
@@ -186,15 +207,14 @@ public class CheckPolicy {
 			        }
 		        });
 		if (list.isEmpty()) {
-			return true;
+			return;
 		}
 		fail(list.stream().map(l -> "You must set ToOne with optional in " + mapPathElementToString(l.getParent()))
 		        .distinct().collect(Collectors.joining(System.lineSeparator())));
-		return false;
 	}
 
 	@Test
-	public boolean xToManyMustNotUseEAGER() {
+	public void xToManyMustNotUseEAGER() {
 		final var typeOneToMany = typeFactory.get(OneToMany.class).getReference();
 		final var typeManyToMany = typeFactory.get(ManyToMany.class).getReference();
 
@@ -215,11 +235,10 @@ public class CheckPolicy {
 			        }
 		        });
 		if (list.isEmpty()) {
-			return true;
+			return;
 		}
 		fail(list.stream().map(l -> "You must set ToMany with not EAGER in " + mapPathElementToString(l.getParent()))
 		        .distinct().collect(Collectors.joining(System.lineSeparator())));
-		return false;
 	}
 
 	@Test
@@ -361,6 +380,333 @@ public class CheckPolicy {
 			throw new BadImportClass(classBaseName,
 			        reason,
 			        classesWithBadImports.stream().collect(Collectors.joining(", ")));
+		}
+	}
+
+	public static List<CtType<?>> searchByAnnotationInClass(final Class<?> annotation) {// NOSONAR S1452
+		final var annotationType = typeFactory.get(annotation).getReference();
+		return launcher.getFactory().Package().getRootPackage().getElements(
+		        new AbstractFilter<CtType<?>>() {
+			        @Override
+			        public boolean matches(final CtType<?> element) {
+				        return element.getAnnotations().stream()
+				                .anyMatch(a -> a.getType().equals(annotationType));
+			        }
+		        });
+	}
+
+	public static List<CtType<?>> searchByAnnotationInClass(final String annotationName) {// NOSONAR S1452
+		Class<?> annotation;
+		try {
+			annotation = Class.forName(annotationName);
+		} catch (final ClassNotFoundException e) {
+			return List.of();
+		}
+		return searchByAnnotationInClass(annotation);
+	}
+
+	static boolean ensureContainInPackageName(final String packageName, final String searched) {
+		final var dot = packageName.lastIndexOf('.');
+		if (dot == -1) {
+			return packageName.startsWith(searched) || packageName.endsWith(searched);
+		} else {
+			final var subpackageName = packageName.substring(dot + 1);
+			return subpackageName.startsWith(searched) || subpackageName.endsWith(searched);
+		}
+	}
+
+	public static void assertInPackageName(final CtType<?> item, final String packageNameContain) {
+		final var ctPackage = (CtPackageImpl) item.getParent();
+		final var packageName = ctPackage.getQualifiedName();
+		if (ensureContainInPackageName(packageName, packageNameContain) == false) {
+			throw new BadClassLocation(item.getQualifiedName(), packageName, packageNameContain);
+		}
+	}
+
+	public static void assertSpringBootStereotypeInItsPackage(final String annotationName,
+	                                                          final String packageNameContain) {
+		final var bclList = searchByAnnotationInClass(annotationName)
+		        .stream()
+		        .map(item -> {
+			        try {
+				        assertInPackageName(item, packageNameContain);
+				        return null;
+			        } catch (final BadClassLocation bcl) {
+				        return bcl;
+			        }
+		        })
+		        .filter(Objects::nonNull)
+		        .collect(Collectors.toList());
+		if (bclList.isEmpty() == false) {
+			throw new BadClassLocation(bclList);
+		}
+	}
+
+	@Test
+	public void springBootControllersInControllerPackage() {
+		assertSpringBootStereotypeInItsPackage(CONTROLLER_ANNOTATION_NAME, CONTROLLER_BASE_PKG);
+	}
+
+	@Test
+	public void springBootEntitiesInEntityPackage() {
+		assertSpringBootStereotypeInItsPackage(ENTITY_ANNOTATION_NAME, ENTITY_BASE_PKG);
+	}
+
+	@Test
+	public void springBootRepositoriesInRepositoryPackage() {
+		assertSpringBootStereotypeInItsPackage(REPOSITORY_ANNOTATION_NAME, REPOSITORY_BASE_PKG);
+	}
+
+	@Test
+	public void springBootServicesInServicePackage() {
+		assertSpringBootStereotypeInItsPackage(SERVICE_ANNOTATION_NAME, SERVICE_BASE_PKG);
+	}
+
+	public static List<CtPackage> searchPackagesByPackageName(final String packageNameContain) {
+		return launcher.getFactory().Package().getRootPackage().getElements(
+		        new AbstractFilter<CtPackage>() {
+			        @Override
+			        public boolean matches(final CtPackage element) {
+				        return ensureContainInPackageName(element.getQualifiedName(), packageNameContain);
+			        }
+		        });
+	}
+
+	public static List<CtType<?>> searchClassesByPackages(final List<CtPackage> packages, // NOSONAR S1452
+	                                                      final Predicate<CtType<?>> inPackageFilter) {
+		final var packagesSet = packages.stream().distinct().collect(toUnmodifiableSet());
+		return launcher.getFactory().Package().getRootPackage().getElements(
+		        new AbstractFilter<CtType<?>>() {
+			        @Override
+			        public boolean matches(final CtType<?> element) {
+				        return packagesSet.contains(element.getParent())
+				               && inPackageFilter.test(element);
+			        }
+		        });
+	}
+
+	public static Predicate<CtType<?>> getIsAnnotatedClass(final Class<?> annotation) { // NOSONAR S1452
+		final var annotationType = typeFactory.get(annotation).getReference();
+		return element -> element.getAnnotations()
+		        .stream()
+		        .anyMatch(a -> a.getType().equals(annotationType));
+
+	}
+
+	public enum CtTypeCat {
+		CLASS(t -> {
+			if (CtClassImpl.class.equals(t.getClass()) == false) {
+				return false;
+			}
+			final var c = (CtClassImpl<?>) t;
+			return c.isAbstract() == false
+			       && c.isAnonymous() == false
+			       && c.isClass() == true
+			       && c.isLocalType() == false
+			       && c.isPrivate() == false
+			       && c.isStatic() == false
+			       && c.isEnum() == false
+			       && c.isImplicit() == false;
+		}),
+		INTERFACE(t -> CtInterfaceImpl.class.equals(t.getClass()));
+
+		private final Predicate<CtType<?>> filter;
+
+		private CtTypeCat(final Predicate<CtType<?>> filter) {
+			this.filter = filter;
+		}
+
+	}
+
+	public static boolean assertClassesByPackageIsAnnotated(final String packageNameContain,
+	                                                        final String annotationName,
+	                                                        final CtTypeCat typeCat) {
+		return assertClassesByPackageIsAnnotated(packageNameContain, annotationName, typeCat, t -> false);
+	}
+
+	private static final Predicate<CtType<?>> filterTestAllowed = t -> {
+		final var name = t.getQualifiedName();
+		return name.toLowerCase().endsWith("test")
+		       || name.endsWith("IT")
+		       || name.endsWith("UT")
+		       || name.endsWith("TT");
+	};
+
+	public static boolean assertClassesByPackageIsAnnotated(final String packageNameContain,
+	                                                        final String annotationName,
+	                                                        final CtTypeCat typeCat,
+	                                                        final Predicate<CtType<?>> filterOutAllowed) {
+		Class<?> annotation;
+		try {
+			annotation = Class.forName(annotationName);
+		} catch (final ClassNotFoundException e) {
+			return true;
+		}
+		final var packages = searchPackagesByPackageName(packageNameContain);
+		final var predicateIsAnnotated = getIsAnnotatedClass(annotation);
+
+		final var noAnnotatedList = searchClassesByPackages(packages,
+		        predicateIsAnnotated.negate().and(typeCat.filter))
+		                .stream()
+		                .filter(filterOutAllowed.negate())
+		                .filter(filterTestAllowed.negate())
+		                .collect(toUnmodifiableList());
+
+		if (noAnnotatedList.isEmpty()) {
+			return true;
+		}
+		final var bclList = noAnnotatedList.stream()
+		        .map(item -> new BadClassAnnotation(item.getQualifiedName(),
+		                ((CtPackageImpl) item.getParent()).getQualifiedName(),
+		                packageNameContain))
+		        .collect(Collectors.toUnmodifiableList());
+		throw new BadClassAnnotation(bclList);
+	}
+
+	@Test
+	public void springBootNotControllerInControllerPackage() {
+		Class<?> restControllerAnnotation;
+		try {
+			restControllerAnnotation = Class.forName("org.springframework.web.bind.annotation.RestController");
+		} catch (final ClassNotFoundException e) {
+			return;
+		}
+
+		assertClassesByPackageIsAnnotated(CONTROLLER_BASE_PKG, CONTROLLER_ANNOTATION_NAME, CLASS,
+		        getIsAnnotatedClass(restControllerAnnotation));
+	}
+
+	@Test
+	public void springBootNotEntityInEntityPackage() {
+		Class<?> mappedSuperclassAnnotation;
+		try {
+			mappedSuperclassAnnotation = Class.forName("javax.persistence.MappedSuperclass");
+		} catch (final ClassNotFoundException e) {
+			return;
+		}
+		assertClassesByPackageIsAnnotated(ENTITY_BASE_PKG, ENTITY_ANNOTATION_NAME, CLASS,
+		        getIsAnnotatedClass(mappedSuperclassAnnotation));
+	}
+
+	@Test
+	public void springBootNotRepositoryInRepositoryPackage() {
+		assertClassesByPackageIsAnnotated(REPOSITORY_BASE_PKG, REPOSITORY_ANNOTATION_NAME, INTERFACE,
+		        t -> t.getQualifiedName().toLowerCase().endsWith("dao"));
+	}
+
+	@Test
+	public void springBootNotServiceInServicePackage() {
+		assertClassesByPackageIsAnnotated(SERVICE_BASE_PKG, SERVICE_ANNOTATION_NAME, CLASS);
+	}
+
+	public static boolean assertClassesByPackageIsRightType(final String packageNameContain,
+	                                                        final Collection<CtTypeCat> typeCatAllowed) {
+		return assertClassesByPackageIsRightType(packageNameContain, typeCatAllowed, t -> false);
+	}
+
+	public static boolean assertClassesByPackageIsRightType(final String packageNameContain,
+	                                                        final Collection<CtTypeCat> typeCatAllowed,
+	                                                        final Predicate<CtType<?>> filterOutAllowed) {
+		final var packages = searchPackagesByPackageName(packageNameContain);
+		final Predicate<CtType<?>> inPackageFilter = t -> typeCatAllowed.stream()
+		        .anyMatch(tC -> tC.filter.test(t));
+		final var badTypeList = searchClassesByPackages(packages,
+		        inPackageFilter.negate().and(filterTestAllowed.negate()).and(filterOutAllowed.negate()));
+
+		if (badTypeList.isEmpty()) {
+			return true;
+		}
+		final var bclList = badTypeList.stream()
+		        .map(CtTypeInformation::getQualifiedName)
+		        .collect(toUnmodifiableList());
+		throw new AssertionError("Invalid type in package " + packageNameContain + ":" + bclList);
+	}
+
+	@Test
+	public void springBootNotClassInControllerPackage() {
+		assertClassesByPackageIsRightType(CONTROLLER_BASE_PKG, List.of(CLASS));
+	}
+
+	@Test
+	public void springBootNotClassInEntityPackage() {
+		assertClassesByPackageIsRightType(ENTITY_BASE_PKG, List.of(CLASS), CtModifiable::isAbstract);
+	}
+
+	@Test
+	public void springBootNotInterfaceInRepositoryPackage() {
+		Class<?> repositoryAnnotation;
+		try {
+			repositoryAnnotation = Class.forName(REPOSITORY_ANNOTATION_NAME);
+		} catch (final ClassNotFoundException e) {
+			return;
+		}
+		final var filter = getIsAnnotatedClass(repositoryAnnotation)
+		        .and(t -> t.getQualifiedName().toLowerCase().endsWith("daoimpl"));
+		assertClassesByPackageIsRightType(REPOSITORY_BASE_PKG, List.of(INTERFACE), filter);
+	}
+
+	@Test
+	public void springBootNotClassOrInterfaceInServicePackage() {
+		assertClassesByPackageIsRightType(SERVICE_BASE_PKG, List.of(INTERFACE, CLASS));
+	}
+
+	/**
+	 * Check services class name "nServiceImpl"
+	 */
+	@Test
+	public void springBootServiceBadName() {
+		final var serviceImplList = searchByAnnotationInClass(SERVICE_ANNOTATION_NAME);
+		final var badNames = serviceImplList.stream()
+		        .map(CtTypeInformation::getQualifiedName)
+		        .filter(s -> s.endsWith("ServiceImpl") == false)
+		        .collect(toUnmodifiableList());
+		if (badNames.isEmpty() == false) {
+			fail("Service classes with invalid suffix name (not ends with \"ServiceImpl\"): " + badNames);
+		}
+	}
+
+	/**
+	 * Check services class name implements Interface
+	 */
+	@Test
+	public void springBootServiceDontImplInterface() {
+		final var serviceImplList = searchByAnnotationInClass(SERVICE_ANNOTATION_NAME);
+		final var noInterfaces = serviceImplList.stream()
+		        .filter(s -> s.getSuperInterfaces().isEmpty())
+		        .map(CtTypeInformation::getQualifiedName)
+		        .collect(toUnmodifiableList());
+		if (noInterfaces.isEmpty() == false) {
+			fail("Service classes that do not implement an interface: " + noInterfaces);
+		}
+	}
+
+	/**
+	 * Check services class name if implemented Interface is same Pkg, check I name "nService"
+	 */
+	@Test
+	public void springBootServiceInterfaceNames() {
+		final var serviceImplList = searchByAnnotationInClass(SERVICE_ANNOTATION_NAME);
+		final var localPackages = serviceImplList.stream()
+		        .filter(s -> s.getSuperInterfaces().isEmpty() == false)
+		        .map(CtElement::getParent)
+		        .filter(Objects::nonNull)
+		        .filter(p -> p instanceof CtPackage)
+		        .map(p -> (CtPackage) p)
+		        .map(CtPackage::getReference)
+		        .distinct()
+		        .collect(toUnmodifiableSet());
+
+		final var badNamedServiceInterfaces = serviceImplList.stream()
+		        .flatMap(s -> s.getSuperInterfaces().stream())
+		        .distinct()
+		        .filter(i -> i.getPackage() != null)
+		        .filter(i -> localPackages.contains(i.getPackage()))
+		        .map(CtTypeInformation::getQualifiedName)
+		        .filter(i -> i.endsWith("Service") == false)
+		        .collect(toUnmodifiableList());
+
+		if (badNamedServiceInterfaces.isEmpty() == false) {
+			fail("Missnamed Service interfaces: " + badNamedServiceInterfaces);
 		}
 	}
 
