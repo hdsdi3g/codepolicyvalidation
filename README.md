@@ -10,6 +10,8 @@ See pom.xml file for more details.
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=hdsdi3g_codepolicyvalidation&metric=alert_status)](https://sonarcloud.io/dashboard?id=hdsdi3g_codepolicyvalidation)
 
+![CodeQL](https://github.com/hdsdi3g/codepolicyvalidation/workflows/CodeQL/badge.svg)
+
 ## Setup
 
 Add in your pom file:
