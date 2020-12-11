@@ -19,6 +19,7 @@ package tv.hd3g.commons.codepolicyvalidation;
 import static java.util.stream.Collectors.toUnmodifiableList;
 import static java.util.stream.Collectors.toUnmodifiableSet;
 import static org.junit.jupiter.api.Assertions.fail;
+import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.ABSTRACT;
 import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.CLASS;
 import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.INTERFACE;
 
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -37,6 +39,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import spoon.Launcher;
@@ -61,6 +64,7 @@ import spoon.support.reflect.declaration.CtClassImpl;
 import spoon.support.reflect.declaration.CtInterfaceImpl;
 import spoon.support.reflect.declaration.CtPackageImpl;
 
+@Disabled
 public class CheckPolicy {
 
 	private static final String CONTROLLER_ANNOTATION_NAME = "org.springframework.stereotype.Controller";
@@ -493,13 +497,13 @@ public class CheckPolicy {
 
 	}
 
-	public enum CtTypeCat {
-		CLASS(t -> {
+	private static final Predicate<CtType<?>> getClassFilter(final boolean mustAbstract) {
+		return t -> {
 			if (CtClassImpl.class.equals(t.getClass()) == false) {
 				return false;
 			}
 			final var c = (CtClassImpl<?>) t;
-			return c.isAbstract() == false
+			return c.isAbstract() == mustAbstract
 			       && c.isAnonymous() == false
 			       && c.isClass() == true
 			       && c.isLocalType() == false
@@ -507,7 +511,12 @@ public class CheckPolicy {
 			       && c.isStatic() == false
 			       && c.isEnum() == false
 			       && c.isImplicit() == false;
-		}),
+		};
+	}
+
+	public enum CtTypeCat {
+		CLASS(getClassFilter(false)),
+		ABSTRACT(getClassFilter(true)),
 		INTERFACE(t -> CtInterfaceImpl.class.equals(t.getClass()));
 
 		private final Predicate<CtType<?>> filter;
@@ -515,7 +524,6 @@ public class CheckPolicy {
 		private CtTypeCat(final Predicate<CtType<?>> filter) {
 			this.filter = filter;
 		}
-
 	}
 
 	public static boolean assertClassesByPackageIsAnnotated(final String packageNameContain,
@@ -647,7 +655,7 @@ public class CheckPolicy {
 
 	@Test
 	public void springBootNotClassOrInterfaceInServicePackage() {
-		assertClassesByPackageIsRightType(SERVICE_BASE_PKG, List.of(INTERFACE, CLASS));
+		assertClassesByPackageIsRightType(SERVICE_BASE_PKG, List.of(INTERFACE, CLASS, ABSTRACT));
 	}
 
 	/**
@@ -672,11 +680,16 @@ public class CheckPolicy {
 	public void springBootServiceDontImplInterface() {
 		final var serviceImplList = searchByAnnotationInClass(SERVICE_ANNOTATION_NAME);
 		final var noInterfaces = serviceImplList.stream()
-		        .filter(s -> s.getSuperInterfaces().isEmpty())
+		        .filter(s -> s.getSuperInterfaces().isEmpty()
+		                     && Optional.ofNullable(s.getSuperclass())
+		                             .map(CtTypeReference::getSuperInterfaces)
+		                             .orElse(Set.of())
+		                             .isEmpty())
 		        .map(CtTypeInformation::getQualifiedName)
 		        .collect(toUnmodifiableList());
 		if (noInterfaces.isEmpty() == false) {
-			fail("Service classes that do not implement an interface: " + noInterfaces);
+			fail("Service classes that do not implement an interface or extends classes do not implement an interface: "
+			     + noInterfaces);
 		}
 	}
 
