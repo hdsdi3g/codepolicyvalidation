@@ -723,4 +723,24 @@ public class CheckPolicy {
 		}
 	}
 
+	/**
+	 * Good: MyCheckPolicyTest extends CheckPolicy
+	 * Bad: MyCheckPolicy extends CheckPolicy
+	 */
+	@Test
+	public void classExtendsCheckPolicyNamesMustEndsByTest() {
+		final var typeCheckPolicy = typeFactory.get(CheckPolicy.class);
+		final var classesWithBadNames = classesByImported.keySet().stream()
+		        .filter(cl -> cl.getQualifiedName().equals(typeCheckPolicy.getQualifiedName()))
+		        .flatMap(cl -> classesByImported.get(cl).stream())
+		        .filter(cl -> cl.getQualifiedName().equals(typeCheckPolicy.getQualifiedName()) == false)
+		        .map(CtType::getQualifiedName)
+		        .filter(name -> name.endsWith("Test") == false)
+		        .collect(Collectors.toUnmodifiableSet());
+
+		if (classesWithBadNames.isEmpty() == false) {
+			throw new MissingTestInClassName(classesWithBadNames.stream().collect(Collectors.joining(", ")));
+		}
+	}
+
 }

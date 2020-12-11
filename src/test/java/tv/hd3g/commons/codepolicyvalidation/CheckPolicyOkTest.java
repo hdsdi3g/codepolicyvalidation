@@ -67,4 +67,9 @@ class CheckPolicyOkTest {
 		assertFalse(CheckPolicy.ensureContainInPackageName("aa.bb.zzzcczzz", "cc"));
 	}
 
+	@Test
+	void classExtendsCheckPolicyNamesMustEndsByTest() {// NOSONAR S2699
+		checkPolicy.classExtendsCheckPolicyNamesMustEndsByTest();
+	}
+
 }

@@ -121,4 +121,10 @@ class CheckPolicyKoTest {
 		        () -> checkPolicy.notCommonsCollection3Use4());
 	}
 
+	@Test
+	void classExtendsCheckPolicyNamesMustEndsByTest() {
+		Assertions.assertThrows(AssertionError.class,
+		        () -> checkPolicy.classExtendsCheckPolicyNamesMustEndsByTest());
+	}
+
 }
