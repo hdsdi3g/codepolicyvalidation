@@ -30,7 +30,7 @@ Use as Junit 5 template. Just create a test Class in your code like this:
 ```
 import tv.hd3g.commons.codepolicyvalidation.CheckPolicy;
 
-public class CodePolicyValidation extends CheckPolicy {
+public class CodePolicyValidationTest extends CheckPolicy {
 }
 ```
 
