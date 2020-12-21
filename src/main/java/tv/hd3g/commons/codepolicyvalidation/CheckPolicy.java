@@ -92,7 +92,7 @@ public class CheckPolicy {
 
 	public static void globalInit(final String... inputResources) {
 		launcher = new Launcher();
-		for (int i = 0; i < inputResources.length; i++) {
+		for (var i = 0; i < inputResources.length; i++) {
 			launcher.addInputResource(inputResources[i]);
 		}
 		final var allTypes = launcher.buildModel().getAllTypes().stream().collect(Collectors.toUnmodifiableList());
@@ -540,7 +540,7 @@ public class CheckPolicy {
 
 		private final Predicate<CtType<?>> filter;
 
-		private CtTypeCat(final Predicate<CtType<?>> filter) {
+		CtTypeCat(final Predicate<CtType<?>> filter) {
 			this.filter = filter;
 		}
 	}
