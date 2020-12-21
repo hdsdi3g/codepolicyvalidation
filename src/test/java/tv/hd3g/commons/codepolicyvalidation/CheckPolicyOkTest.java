@@ -72,4 +72,9 @@ class CheckPolicyOkTest {
 		checkPolicy.classExtendsCheckPolicyNamesMustEndsByTest();
 	}
 
+	@Test
+	void testOkOptional() {// NOSONAR S2699
+		checkPolicy.noOptionalOf();
+	}
+
 }

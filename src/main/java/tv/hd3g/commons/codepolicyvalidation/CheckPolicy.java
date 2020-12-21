@@ -194,6 +194,25 @@ public class CheckPolicy {
 	}
 
 	@Test
+	public void noOptionalOf() {
+		final var typeOptional = typeFactory.get(Optional.class).getReference();
+
+		final var list = launcher.getFactory().Package().getRootPackage().getElements(
+		        new AbstractFilter<CtExecutableReference<?>>() {
+			        @Override
+			        public boolean matches(final CtExecutableReference<?> element) {
+				        return element.getReferencedTypes().contains(typeOptional)
+				               && element.getSimpleName().equals("of");
+			        }
+		        });
+		if (list.isEmpty()) {
+			return;
+		}
+		fail(list.stream().map(l -> "Don't use Optional.of in " + mapPathElementToString(l.getParent()))
+		        .collect(Collectors.joining(System.lineSeparator())));
+	}
+
+	@Test
 	public void xToOneMustToSetOptional() {
 		final var typeManyToOne = typeFactory.get(ManyToOne.class).getReference();
 		final var typeOneToOne = typeFactory.get(OneToOne.class).getReference();
