@@ -104,4 +104,14 @@ class CheckPolicySpringBootOkTest {
 		checkPolicy.springBootServiceInterfaceNames();
 	}
 
+	@Test
+	void springBootComponentInComponentPackage() {// NOSONAR S2699
+		checkPolicy.springBootComponentInComponentPackage();
+	}
+
+	@Test
+	void springBootNotComponentInComponentPackage() {// NOSONAR S2699
+		checkPolicy.springBootNotComponentInComponentPackage();
+	}
+
 }

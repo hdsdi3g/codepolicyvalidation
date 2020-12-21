@@ -67,11 +67,13 @@ import spoon.support.reflect.declaration.CtPackageImpl;
 @Disabled
 public class CheckPolicy {
 
+	private static final String COMPONENT_ANNOTATION_NAME = "org.springframework.stereotype.Component";
 	private static final String CONTROLLER_ANNOTATION_NAME = "org.springframework.stereotype.Controller";
 	private static final String ENTITY_ANNOTATION_NAME = "javax.persistence.Entity";
 	private static final String REPOSITORY_ANNOTATION_NAME = "org.springframework.stereotype.Repository";
 	private static final String SERVICE_ANNOTATION_NAME = "org.springframework.stereotype.Service";
 
+	private static final String COMPONENT_BASE_PKG = "component";
 	private static final String CONTROLLER_BASE_PKG = "controller";
 	private static final String ENTITY_BASE_PKG = "entity";
 	private static final String REPOSITORY_BASE_PKG = "repository";
@@ -481,6 +483,11 @@ public class CheckPolicy {
 	}
 
 	@Test
+	public void springBootComponentInComponentPackage() {
+		assertSpringBootStereotypeInItsPackage(COMPONENT_ANNOTATION_NAME, COMPONENT_BASE_PKG);
+	}
+
+	@Test
 	public void springBootServicesInServicePackage() {
 		assertSpringBootStereotypeInItsPackage(SERVICE_ANNOTATION_NAME, SERVICE_BASE_PKG);
 	}
@@ -601,6 +608,19 @@ public class CheckPolicy {
 
 		assertClassesByPackageIsAnnotated(CONTROLLER_BASE_PKG, CONTROLLER_ANNOTATION_NAME, CLASS,
 		        getIsAnnotatedClass(restControllerAnnotation));
+	}
+
+	@Test
+	public void springBootNotComponentInComponentPackage() {
+		Class<?> componentAnnotation;
+		try {
+			componentAnnotation = Class.forName(COMPONENT_ANNOTATION_NAME);
+		} catch (final ClassNotFoundException e) {
+			return;
+		}
+
+		assertClassesByPackageIsAnnotated(COMPONENT_BASE_PKG, COMPONENT_ANNOTATION_NAME, CLASS,
+		        getIsAnnotatedClass(componentAnnotation));
 	}
 
 	@Test
