@@ -14,7 +14,7 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2020
  *
  */
-package tv.hd3g.commons.codepolicyvalidation.springboot.ok;
+package tv.hd3g.commons.codepolicyvalidation.springboot.ok.component;
 
 import org.springframework.stereotype.Component;
 

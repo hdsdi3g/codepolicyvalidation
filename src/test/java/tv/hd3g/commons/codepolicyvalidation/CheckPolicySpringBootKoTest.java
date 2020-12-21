@@ -120,4 +120,16 @@ class CheckPolicySpringBootKoTest {
 		        () -> checkPolicy.springBootServiceInterfaceNames());
 	}
 
+	@Test
+	void springBootComponentInComponentPackage() {
+		Assertions.assertThrows(AssertionError.class,
+		        () -> checkPolicy.springBootComponentInComponentPackage());
+	}
+
+	@Test
+	void springBootNotComponentInComponentPackage() {
+		Assertions.assertThrows(AssertionError.class,
+		        () -> checkPolicy.springBootNotComponentInComponentPackage());
+	}
+
 }

@@ -30,6 +30,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
 
+import spoon.reflect.declaration.CtType;
 import tv.hd3g.commons.codepolicyvalidation.springboot.ok.SpringBootApp;
 import tv.hd3g.commons.codepolicyvalidation.springboot.ok.controller.AController;
 import tv.hd3g.commons.codepolicyvalidation.springboot.ok.entity.AnEntity;
@@ -86,9 +87,9 @@ class CheckPolicySpringBootTest {
 	void searchClassesByPackages() {
 		final var listP = CheckPolicy.searchPackagesByPackageName("ok");
 		final var listC = CheckPolicy.searchClassesByPackages(listP, element -> true);
-		assertEquals(4, listC.size());
+		assertEquals(3, listC.size());
 		assertTrue(listC.stream()
-		        .map(i -> i.getQualifiedName())
+		        .map(CtType::getQualifiedName)
 		        .anyMatch(qn -> qn.equalsIgnoreCase("tv.hd3g.commons.codepolicyvalidation.springboot.ok.SimpleClass")));
 	}
 
