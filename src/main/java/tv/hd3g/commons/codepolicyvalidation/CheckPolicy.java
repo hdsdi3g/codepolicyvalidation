@@ -723,7 +723,7 @@ public class CheckPolicy {
 		        .map(CtElement::getParent)
 		        .filter(Objects::nonNull)
 		        .filter(p -> p instanceof CtPackage)
-		        .map(p -> (CtPackage) p)
+		        .map(CtPackage.class::cast)
 		        .map(CtPackage::getReference)
 		        .distinct()
 		        .collect(toUnmodifiableSet());
