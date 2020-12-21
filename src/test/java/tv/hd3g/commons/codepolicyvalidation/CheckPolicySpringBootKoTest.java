@@ -132,4 +132,10 @@ class CheckPolicySpringBootKoTest {
 		        () -> checkPolicy.springBootNotComponentInComponentPackage());
 	}
 
+	@Test
+	void springBootRESTControllerMethodsMustReturnResponseEntity() {
+		Assertions.assertThrows(AssertionError.class,
+		        () -> checkPolicy.springBootRESTControllerMethodsMustReturnResponseEntity());
+	}
+
 }

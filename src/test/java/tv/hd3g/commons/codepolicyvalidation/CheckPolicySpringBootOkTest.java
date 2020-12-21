@@ -114,4 +114,9 @@ class CheckPolicySpringBootOkTest {
 		checkPolicy.springBootNotComponentInComponentPackage();
 	}
 
+	@Test
+	void springBootRESTControllerMethodsMustReturnResponseEntity() {// NOSONAR S2699
+		checkPolicy.springBootRESTControllerMethodsMustReturnResponseEntity();
+	}
+
 }

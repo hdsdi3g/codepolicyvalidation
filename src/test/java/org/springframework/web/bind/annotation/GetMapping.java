@@ -14,18 +14,14 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2020
  *
  */
-package tv.hd3g.commons.codepolicyvalidation.springboot.ok.controller;
+package org.springframework.web.bind.annotation;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@RestController
-public class ARESTController {
+import java.lang.annotation.Retention;
 
-	@PostMapping
-	public ResponseEntity<Object> aMethod1() {
-		return null;
-	}
+@Retention(RUNTIME)
+@RequestMapping
+public @interface GetMapping {
 
 }

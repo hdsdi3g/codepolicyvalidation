@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
@@ -49,6 +50,7 @@ import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtThrow;
 import spoon.reflect.declaration.CtAnnotation;
 import spoon.reflect.declaration.CtElement;
+import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtModifiable;
 import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtType;
@@ -69,6 +71,7 @@ public class CheckPolicy {
 
 	private static final String COMPONENT_ANNOTATION_NAME = "org.springframework.stereotype.Component";
 	private static final String CONTROLLER_ANNOTATION_NAME = "org.springframework.stereotype.Controller";
+	private static final String REST_CONTROLLER_ANNOTATION_NAME = "org.springframework.web.bind.annotation.RestController";
 	private static final String ENTITY_ANNOTATION_NAME = "javax.persistence.Entity";
 	private static final String REPOSITORY_ANNOTATION_NAME = "org.springframework.stereotype.Repository";
 	private static final String SERVICE_ANNOTATION_NAME = "org.springframework.stereotype.Service";
@@ -78,6 +81,14 @@ public class CheckPolicy {
 	private static final String ENTITY_BASE_PKG = "entity";
 	private static final String REPOSITORY_BASE_PKG = "repository";
 	private static final String SERVICE_BASE_PKG = "service";
+
+	private static final Set<String> annotationsControllerRequestNames = Set.of(
+	        "@org.springframework.web.bind.annotation.RequestMapping",
+	        "@org.springframework.web.bind.annotation.PostMapping",
+	        "@org.springframework.web.bind.annotation.PutMapping",
+	        "@org.springframework.web.bind.annotation.DeleteMapping",
+	        "@org.springframework.web.bind.annotation.GetMapping",
+	        "@org.springframework.web.bind.annotation.PatchMapping");
 
 	public static final TypeFactory typeFactory = new TypeFactory();
 
@@ -601,7 +612,7 @@ public class CheckPolicy {
 	public void springBootNotControllerInControllerPackage() {
 		Class<?> restControllerAnnotation;
 		try {
-			restControllerAnnotation = Class.forName("org.springframework.web.bind.annotation.RestController");
+			restControllerAnnotation = Class.forName(REST_CONTROLLER_ANNOTATION_NAME);
 		} catch (final ClassNotFoundException e) {
 			return;
 		}
@@ -779,6 +790,55 @@ public class CheckPolicy {
 
 		if (classesWithBadNames.isEmpty() == false) {
 			throw new MissingTestInClassName(classesWithBadNames.stream().collect(Collectors.joining(", ")));
+		}
+	}
+
+	private Stream<CtMethod<?>> hasNotAnnotationMethod(final List<CtMethod<?>> methods,
+	                                                   final Set<String> annotationNames) {
+		return methods.stream()
+		        .filter(m -> m.getAnnotations().stream()
+		                .noneMatch(d -> annotationNames.stream().anyMatch(aN -> d.toString().contains(aN))));
+	}
+
+	@Test
+	public void springBootRESTControllerMethodsMustReturnResponseEntity() {
+
+		final var typeObject = typeFactory.get(Object.class);
+		final var allObjectMethodNames = typeObject.getAllMethods().stream()
+		        .map(CtMethod::getSimpleName)
+		        .distinct()
+		        .collect(toUnmodifiableSet());
+
+		final var publicMethodByControllerClasses = searchByAnnotationInClass(REST_CONTROLLER_ANNOTATION_NAME).stream()
+		        .collect(Collectors.toUnmodifiableMap(c -> c,
+		                c -> c.getAllMethods().stream()
+		                        .filter(CtMethod::isPublic)
+		                        .filter(Predicate.not(CtMethod::isStatic))
+		                        .filter(m -> allObjectMethodNames.contains(m.getSimpleName()) == false)
+		                        .collect(toUnmodifiableList())));
+
+		final var bclList = publicMethodByControllerClasses.entrySet().stream()
+		        .flatMap(entry -> {
+			        final var cl = entry.getKey();
+			        final var methods = entry.getValue();
+
+			        return Stream.of(hasNotAnnotationMethod(methods, annotationsControllerRequestNames)
+			                .map(m -> cl.getSimpleName() + ":" + m.getSimpleName())
+			                .map(ref -> "public method in RestController \"" + ref + "\" is not a @RequestMapping"),
+			                methods.stream()
+			                        .filter(m -> (m.getType() == null
+			                                      || m.getType().toString()
+			                                              .startsWith(
+			                                                      "org.springframework.http.ResponseEntity") == false))
+			                        .map(m -> cl.getSimpleName() + ":" + m.getSimpleName())
+			                        .map(ref -> "public method in RestController \"" + ref
+			                                    + "\" don't return a ResponseEntity"))
+			                .flatMap(t -> t);
+		        })
+		        .collect(toUnmodifiableList());
+
+		if (bclList.isEmpty() == false) {
+			throw new AssertionError(String.join("; ", bclList));
 		}
 	}
 

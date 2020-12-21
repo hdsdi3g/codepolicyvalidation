@@ -14,18 +14,7 @@
  * Copyright (C) hdsdi3g for hd3g.tv 2020
  *
  */
-package tv.hd3g.commons.codepolicyvalidation.springboot.ok.controller;
+package org.springframework.http;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-public class ARESTController {
-
-	@PostMapping
-	public ResponseEntity<Object> aMethod1() {
-		return null;
-	}
-
+public class ResponseEntity<T> {
 }
