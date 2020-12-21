@@ -127,4 +127,10 @@ class CheckPolicyKoTest {
 		        () -> checkPolicy.classExtendsCheckPolicyNamesMustEndsByTest());
 	}
 
+	@Test
+	void testNotOptionalOf() {
+		Assertions.assertThrows(AssertionError.class,
+		        () -> checkPolicy.noOptionalOf());
+	}
+
 }

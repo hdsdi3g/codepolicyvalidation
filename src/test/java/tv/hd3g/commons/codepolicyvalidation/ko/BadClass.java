@@ -20,6 +20,7 @@ import static javax.persistence.FetchType.EAGER;
 import static org.junit.Assert.assertEquals;
 
 import java.sql.Date;
+import java.util.Optional;
 
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -67,6 +68,10 @@ class BadClass {
 
 	void c() {
 		throw new RuntimeException();
+	}
+
+	void d() {
+		Optional.of("");
 	}
 
 }

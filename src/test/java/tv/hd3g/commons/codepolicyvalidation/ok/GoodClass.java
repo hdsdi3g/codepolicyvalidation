@@ -21,6 +21,7 @@ import static javax.persistence.FetchType.LAZY;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Optional;
 
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -59,4 +60,8 @@ class GoodClass {
 		}
 	}
 
+	void c() {
+		Optional.ofNullable("");
+		Optional.empty();
+	}
 }
