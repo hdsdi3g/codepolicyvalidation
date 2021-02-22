@@ -17,6 +17,7 @@
 package tv.hd3g.commons.codepolicyvalidation;
 
 import static java.util.stream.Collectors.toUnmodifiableList;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 import static java.util.stream.Collectors.toUnmodifiableSet;
 import static org.junit.jupiter.api.Assertions.fail;
 import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.ABSTRACT;
@@ -24,6 +25,7 @@ import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.CLASS;
 import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.INTERFACE;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -108,23 +110,54 @@ public class CheckPolicy {
 		for (var i = 0; i < inputResources.length; i++) {
 			launcher.addInputResource(inputResources[i]);
 		}
-		final var allTypes = launcher.buildModel().getAllTypes().stream().collect(Collectors.toUnmodifiableList());
+		final var allTypes = launcher.buildModel()
+		        .getAllTypes()
+		        .stream()
+		        .collect(toUnmodifiableList());
 
 		final Map<CtType<?>, Set<CtTypeReference<?>>> importedByClasses = allTypes.stream()
-		        .collect(Collectors.toUnmodifiableMap(
+		        .collect(toUnmodifiableMap(
 		                k -> k,
-		                v -> v.getUsedTypes(true).stream().distinct().collect(Collectors.toUnmodifiableSet())));
+		                v -> {
+			                /**
+			                 * Safe Set transformation.
+			                 * Sometime, hasNext() here thrown a "Comparison method violates its general contract"
+			                 */
+			                final var source = v.getUsedTypes(true);
+			                final var itr = source.iterator();
+			                final var intermediate = new HashSet<CtTypeReference<?>>();
+			                while (true) {
+				                try {
+					                if (itr.hasNext() == false) {
+						                break;
+					                }
+					                intermediate.add(itr.next());
+				                } catch (final IllegalArgumentException e) {
+					                if (itr.hasNext() == false) {
+						                break;
+					                }
+				                }
+			                }
+			                if (intermediate.size() != source.size()) {
+				                throw new IllegalArgumentException(
+				                        "Invalid Spoon behavior during import collection for "
+				                                                   + v.getQualifiedName()
+				                                                   + " intermediate Set size "
+				                                                   + intermediate.size()
+				                                                   + " != source size " + source.size());
+			                }
+			                return intermediate;
+		                }));
 
-		classesByImported = importedByClasses
-		        .values().stream()
+		classesByImported = importedByClasses.values()
+		        .stream()
 		        .flatMap(Set::stream)
 		        .distinct()
-		        .collect(Collectors.toUnmodifiableMap(k -> k,
+		        .collect(toUnmodifiableMap(k -> k,
 		                v -> importedByClasses.entrySet().stream()
 		                        .filter(entry -> entry.getValue().contains(v))
 		                        .map(Entry::getKey)
-		                        .distinct()
-		                        .collect(Collectors.toSet())));
+		                        .collect(toUnmodifiableSet())));
 	}
 
 	@Test
