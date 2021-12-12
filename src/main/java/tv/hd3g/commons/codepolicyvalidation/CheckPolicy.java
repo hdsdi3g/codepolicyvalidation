@@ -786,7 +786,7 @@ public class CheckPolicy {
 		        .filter(s -> s.getSuperInterfaces().isEmpty() == false)
 		        .map(CtElement::getParent)
 		        .filter(Objects::nonNull)
-		        .filter(p -> p instanceof CtPackage)
+		        .filter(CtPackage.class::isInstance)
 		        .map(CtPackage.class::cast)
 		        .map(CtPackage::getReference)
 		        .distinct()
