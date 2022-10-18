@@ -34,103 +34,117 @@ class CheckPolicyKoTest {
 	@Test
 	void testNoIllegalArgumentExceptionWOConstructor() {
 		Assertions.assertThrows(AssertionFailedError.class,
-		        () -> checkPolicy.noIllegalArgumentExceptionWOConstructor());
+				() -> checkPolicy.noIllegalArgumentExceptionWOConstructor());
 	}
 
 	@Test
 	void testNoSysOutSysErr() {
 		Assertions.assertThrows(AssertionFailedError.class,
-		        () -> checkPolicy.noSysOutSysErr());
+				() -> checkPolicy.noSysOutSysErr());
 	}
 
 	@Test
 	void testNoPrintStackTrace() {
 		Assertions.assertThrows(AssertionFailedError.class,
-		        () -> checkPolicy.noSimplePrintStackTrace());
+				() -> checkPolicy.noSimplePrintStackTrace());
 	}
 
 	@Test
 	void testXToOneMustToSetOptional() {
 		Assertions.assertThrows(AssertionFailedError.class,
-		        () -> checkPolicy.xToOneMustToSetOptional());
+				() -> checkPolicy.xToOneMustToSetOptional());
 	}
 
 	@Test
 	void testXToManyMustNotUseEAGER() {
 		Assertions.assertThrows(AssertionFailedError.class,
-		        () -> checkPolicy.xToManyMustNotUseEAGER());
+				() -> checkPolicy.xToManyMustNotUseEAGER());
 	}
 
 	@Test
 	void testNoSuppressWarnings() {
 		Assertions.assertThrows(AssertionFailedError.class,
-		        () -> checkPolicy.noSuppressWarnings());
+				() -> checkPolicy.noSuppressWarnings());
 	}
 
 	@Test
 	void testNoRuntimeException() {
 		Assertions.assertThrows(AssertionFailedError.class,
-		        () -> checkPolicy.noRuntimeException());
+				() -> checkPolicy.noRuntimeException());
 	}
 
 	@Test
 	void testNoNullPointerException() {
 		Assertions.assertThrows(AssertionFailedError.class,
-		        () -> checkPolicy.noNullPointerException());
+				() -> checkPolicy.noNullPointerException());
 	}
 
 	@Test
 	void testNotOldJunitAssert() {
 		Assertions.assertThrows(BadImportClass.class,
-		        () -> checkPolicy.notOldJunitAssert());
+				() -> checkPolicy.notOldJunitAssert());
 	}
 
 	@Test
 	void testNotOldJunitRunner() {
 		Assertions.assertThrows(BadImportClass.class,
-		        () -> checkPolicy.notOldJunitRunner());
+				() -> checkPolicy.notOldJunitRunner());
 	}
 
 	@Test
 	void testNotOldJunit() {
 		Assertions.assertThrows(BadImportClass.class,
-		        () -> checkPolicy.notOldJunit());
+				() -> checkPolicy.notOldJunit());
 	}
 
 	@Test
 	void testNotJunitFramework() {
 		Assertions.assertThrows(BadImportClass.class,
-		        () -> checkPolicy.notJunitFramework());
+				() -> checkPolicy.notJunitFramework());
 	}
 
 	@Test
 	void testNotSQLDate() {
 		Assertions.assertThrows(BadImportClass.class,
-		        () -> checkPolicy.notSQLDate());
+				() -> checkPolicy.notSQLDate());
 	}
 
 	@Test
 	void testNotCommonsLang2_use3() {
 		Assertions.assertThrows(BadImportClass.class,
-		        () -> checkPolicy.notCommonsLang2Use3());
+				() -> checkPolicy.notCommonsLang2Use3());
 	}
 
 	@Test
 	void testNotCommonsCollection3_use4() {
 		Assertions.assertThrows(BadImportClass.class,
-		        () -> checkPolicy.notCommonsCollection3Use4());
+				() -> checkPolicy.notCommonsCollection3Use4());
 	}
 
 	@Test
 	void classExtendsCheckPolicyNamesMustEndsByTest() {
 		Assertions.assertThrows(AssertionError.class,
-		        () -> checkPolicy.classExtendsCheckPolicyNamesMustEndsByTest());
+				() -> checkPolicy.classExtendsCheckPolicyNamesMustEndsByTest());
 	}
 
 	@Test
 	void testNotOptionalOf() {
 		Assertions.assertThrows(AssertionError.class,
-		        () -> checkPolicy.noOptionalOf());
+				() -> checkPolicy.noOptionalOf());
+	}
+
+	@Test
+	void testNotFlatJavaMailSender() {
+		Assertions.assertThrows(AssertionError.class,
+				() -> checkPolicy.notFlatJavaMailSenderOutsideTests(
+						"src/test/java/tv/hd3g/commons/codepolicyvalidation/ok"));
+	}
+
+	@Test
+	void testNotFlatJobKitEngine() {
+		Assertions.assertThrows(AssertionError.class,
+				() -> checkPolicy.notFlatJobKitEngineOutsideTests(
+						"src/test/java/tv/hd3g/commons/codepolicyvalidation/ok"));
 	}
 
 }

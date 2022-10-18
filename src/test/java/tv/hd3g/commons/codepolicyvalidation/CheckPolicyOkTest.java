@@ -29,8 +29,8 @@ class CheckPolicyOkTest {
 	@BeforeAll
 	static void globalInit() {
 		CheckPolicy.globalInit(
-		        "src/test/java/tv/hd3g/commons/codepolicyvalidation/ok",
-		        "src/main/java");
+				"src/test/java/tv/hd3g/commons/codepolicyvalidation/ok",
+				"src/main/java");
 		checkPolicy = new CheckPolicy();
 	}
 
@@ -75,6 +75,16 @@ class CheckPolicyOkTest {
 	@Test
 	void testOkOptional() {// NOSONAR S2699
 		checkPolicy.noOptionalOf();
+	}
+
+	@Test
+	void testOkFlatJavaMailSender() {// NOSONAR S2699
+		checkPolicy.notFlatJavaMailSenderOutsideTests("src/test/java/tv/hd3g/commons/codepolicyvalidation/ok");
+	}
+
+	@Test
+	void testOkFlatJobKitEngine() {// NOSONAR S2699
+		checkPolicy.notFlatJobKitEngineOutsideTests("src/test/java/tv/hd3g/commons/codepolicyvalidation/ok");
 	}
 
 }

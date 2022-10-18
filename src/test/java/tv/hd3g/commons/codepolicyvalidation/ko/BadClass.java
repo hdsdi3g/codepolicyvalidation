@@ -31,18 +31,23 @@ import org.junit.Test;
 import org.junit.runner.Result;
 
 import junit.framework.TestFailure;
+import tv.hd3g.jobkit.engine.FlatJobKitEngine;
+import tv.hd3g.mailkit.utility.FlatJavaMailSender;
 
 /**
  * NEVER USE THIS CLASS
  * Only set for trigger policy tests
  */
-class BadClass {
+class BadClass {// NOSONAR S3577
 
 	@OneToMany(fetch = EAGER)
 	private String var1;
 
 	@OneToOne
 	private String var2;
+
+	FlatJavaMailSender flatJavaMailSender;
+	FlatJobKitEngine flatJobKitEngine;
 
 	@Test // NOSONAR
 	@SuppressWarnings("unused")

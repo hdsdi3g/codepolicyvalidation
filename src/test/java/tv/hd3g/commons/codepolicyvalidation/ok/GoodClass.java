@@ -26,6 +26,9 @@ import java.util.Optional;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import tv.hd3g.jobkit.engine.FlatJobKitEngine;
+import tv.hd3g.mailkit.utility.FlatJavaMailSender;
+
 /**
  * NEVER USE THIS CLASS
  * Only set for trigger policy tests
@@ -37,6 +40,9 @@ class GoodClass {
 
 	@OneToOne(optional = false)
 	private String var2;
+
+	FlatJavaMailSender flatJavaMailSender;
+	FlatJobKitEngine flatJobKitEngine;
 
 	void a() {
 		throw new IllegalArgumentException("This is an argument");
