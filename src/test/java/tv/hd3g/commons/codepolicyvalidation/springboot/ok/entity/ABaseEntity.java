@@ -16,7 +16,7 @@
  */
 package tv.hd3g.commons.codepolicyvalidation.springboot.ok.entity;
 
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public class ABaseEntity {

@@ -16,7 +16,7 @@
  */
 package tv.hd3g.commons.codepolicyvalidation.springboot.ko.service;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 @Entity
 public class AnEntity4 {

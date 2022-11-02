@@ -16,16 +16,15 @@
  */
 package tv.hd3g.commons.codepolicyvalidation.ok;
 
-import static javax.persistence.FetchType.LAZY;
+import static jakarta.persistence.FetchType.LAZY;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Optional;
 
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import tv.hd3g.jobkit.engine.FlatJobKitEngine;
 import tv.hd3g.mailkit.utility.FlatJavaMailSender;
 

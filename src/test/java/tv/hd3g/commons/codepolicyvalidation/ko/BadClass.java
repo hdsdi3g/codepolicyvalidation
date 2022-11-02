@@ -16,20 +16,19 @@
  */
 package tv.hd3g.commons.codepolicyvalidation.ko;
 
-import static javax.persistence.FetchType.EAGER;
+import static jakarta.persistence.FetchType.EAGER;
 import static org.junit.Assert.assertEquals;
 
 import java.sql.Date;
 import java.util.Optional;
-
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 
 import org.apache.commons.collections.ThisClassIsFromAnOlderPackage;
 import org.apache.commons.lang.ThisClassIsFromAn2OlderPackage;
 import org.junit.Test;
 import org.junit.runner.Result;
 
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import junit.framework.TestFailure;
 import tv.hd3g.jobkit.engine.FlatJobKitEngine;
 import tv.hd3g.mailkit.utility.FlatJavaMailSender;

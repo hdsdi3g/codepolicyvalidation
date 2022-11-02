@@ -37,15 +37,14 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import spoon.Launcher;
 import spoon.reflect.code.CtConstructorCall;
 import spoon.reflect.code.CtFieldRead;
@@ -76,7 +75,7 @@ public class CheckPolicy {
 	private static final String COMPONENT_ANNOTATION_NAME = "org.springframework.stereotype.Component";
 	private static final String CONTROLLER_ANNOTATION_NAME = "org.springframework.stereotype.Controller";
 	private static final String REST_CONTROLLER_ANNOTATION_NAME = "org.springframework.web.bind.annotation.RestController";
-	private static final String ENTITY_ANNOTATION_NAME = "javax.persistence.Entity";
+	private static final String ENTITY_ANNOTATION_NAME = "jakarta.persistence.Entity";
 	private static final String REPOSITORY_ANNOTATION_NAME = "org.springframework.stereotype.Repository";
 	private static final String SERVICE_ANNOTATION_NAME = "org.springframework.stereotype.Service";
 
@@ -722,7 +721,7 @@ public class CheckPolicy {
 	public void springBootNotEntityInEntityPackage() {
 		Class<?> mappedSuperclassAnnotation;
 		try {
-			mappedSuperclassAnnotation = Class.forName("javax.persistence.MappedSuperclass");
+			mappedSuperclassAnnotation = Class.forName("jakarta.persistence.MappedSuperclass");
 		} catch (final ClassNotFoundException e) {
 			return;
 		}

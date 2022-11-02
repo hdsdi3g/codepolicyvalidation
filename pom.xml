@@ -16,7 +16,7 @@
         <java.version>11</java.version>
 
         <spoon.version>8.4.0</spoon.version>
-        <persistence.version>2.2</persistence.version>
+        <jakarta.version>3.0.0</jakarta.version>
         <commons-compress.version>1.21</commons-compress.version>
         <junit.version>5.8.2</junit.version>
         <log4j2.version>2.17.2</log4j2.version>
@@ -51,9 +51,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>javax.persistence</groupId>
-            <artifactId>javax.persistence-api</artifactId>
-            <version>${persistence.version}</version>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>${jakarta.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
