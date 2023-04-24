@@ -17,19 +17,12 @@
 package tv.hd3g.commons.codepolicyvalidation;
 
 import static java.util.stream.Collectors.toUnmodifiableList;
-import static java.util.stream.Collectors.toUnmodifiableMap;
 import static java.util.stream.Collectors.toUnmodifiableSet;
 import static org.junit.jupiter.api.Assertions.fail;
-import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.ABSTRACT;
-import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.CLASS;
-import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.INTERFACE;
+import static tv.hd3g.commons.codepolicyvalidation.CtTypeCat.CLASS;
+import static tv.hd3g.commons.codepolicyvalidation.CtTypeCat.INTERFACE;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -45,7 +38,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import spoon.Launcher;
 import spoon.reflect.code.CtConstructorCall;
 import spoon.reflect.code.CtFieldRead;
 import spoon.reflect.code.CtInvocation;
@@ -57,19 +49,12 @@ import spoon.reflect.declaration.CtModifiable;
 import spoon.reflect.declaration.CtPackage;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.declaration.CtTypeInformation;
-import spoon.reflect.factory.TypeFactory;
-import spoon.reflect.path.CtRole;
-import spoon.reflect.path.impl.CtPathImpl;
-import spoon.reflect.path.impl.CtRolePathElement;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.AbstractFilter;
-import spoon.support.reflect.declaration.CtClassImpl;
-import spoon.support.reflect.declaration.CtInterfaceImpl;
-import spoon.support.reflect.declaration.CtPackageImpl;
 
 @Disabled
-public class CheckPolicy {
+public class CheckPolicy extends Policies {
 
 	private static final String SRC_TEST_JAVA = "src/test/java";
 	private static final String COMPONENT_ANNOTATION_NAME = "org.springframework.stereotype.Component";
@@ -93,10 +78,11 @@ public class CheckPolicy {
 			"@org.springframework.web.bind.annotation.GetMapping",
 			"@org.springframework.web.bind.annotation.PatchMapping");
 
-	public static final TypeFactory typeFactory = new TypeFactory();
-
-	private static Launcher launcher;
-	private static Map<CtTypeReference<?>, Set<? extends CtType<?>>> classesByImported;
+	private static final Set<String> validRepositoriesClassesNames = Set.of(
+			"org.springframework.data.jpa.repository.JpaRepository",
+			"org.springframework.data.repository.PagingAndSortingRepository",
+			"org.springframework.data.repository.CrudRepository",
+			"org.springframework.data.repository.Repository");
 
 	/**
 	 * Scan in "this" src/main/java and src/test/java
@@ -104,61 +90,6 @@ public class CheckPolicy {
 	@BeforeAll
 	public static void globalInit() {
 		globalInit("src/main/java", SRC_TEST_JAVA);
-	}
-
-	public static void globalInit(final String... inputResources) {
-		launcher = new Launcher();
-		for (var i = 0; i < inputResources.length; i++) {
-			launcher.addInputResource(inputResources[i]);
-		}
-		final var allTypes = launcher.buildModel()
-				.getAllTypes()
-				.stream()
-				.collect(toUnmodifiableList());
-
-		final Map<CtType<?>, Set<CtTypeReference<?>>> importedByClasses = allTypes.stream()
-				.collect(toUnmodifiableMap(
-						k -> k,
-						v -> {
-							/**
-							 * Safe Set transformation.
-							 * Sometime, hasNext() here thrown a "Comparison method violates its general contract"
-							 */
-							final var source = v.getUsedTypes(true);
-							final var itr = source.iterator();
-							final var intermediate = new HashSet<CtTypeReference<?>>();
-							while (true) {
-								try {
-									if (itr.hasNext() == false) {
-										break;
-									}
-									intermediate.add(itr.next());
-								} catch (final IllegalArgumentException e) {
-									if (itr.hasNext() == false) {
-										break;
-									}
-								}
-							}
-							if (intermediate.size() != source.size()) {
-								throw new IllegalArgumentException(
-										"Invalid Spoon behavior during import collection for "
-																   + v.getQualifiedName()
-																   + " intermediate Set size "
-																   + intermediate.size()
-																   + " != source size " + source.size());
-							}
-							return intermediate;
-						}));
-
-		classesByImported = importedByClasses.values()
-				.stream()
-				.flatMap(Set::stream)
-				.distinct()
-				.collect(toUnmodifiableMap(k -> k,
-						v -> importedByClasses.entrySet().stream()
-								.filter(entry -> entry.getValue().contains(v))
-								.map(Entry::getKey)
-								.collect(toUnmodifiableSet())));
 	}
 
 	@Test
@@ -261,54 +192,70 @@ public class CheckPolicy {
 
 	@Test
 	public void xToOneMustToSetOptional() {
-		final var typeManyToOne = typeFactory.get(ManyToOne.class).getReference();
-		final var typeOneToOne = typeFactory.get(OneToOne.class).getReference();
+		try {
+			final var typeManyToOne = typeFactory.get(ManyToOne.class).getReference();
+			final var typeOneToOne = typeFactory.get(OneToOne.class).getReference();
 
-		final var list = launcher.getFactory().Package().getRootPackage().getElements(
-				new AbstractFilter<CtTypeReference<?>>() {
-					@Override
-					public boolean matches(final CtTypeReference<?> element) {
-						final var topLevelType = element.getTopLevelType();
-						if (typeManyToOne.equals(topLevelType) == false && typeOneToOne.equals(topLevelType) == false
-							|| element.getParent() instanceof CtAnnotation<?> == false) {
-							return false;
+			final var list = launcher.getFactory().Package().getRootPackage().getElements(
+					new AbstractFilter<CtTypeReference<?>>() {
+						@Override
+						public boolean matches(final CtTypeReference<?> element) {
+							final var topLevelType = element.getTopLevelType();
+							if (typeManyToOne.equals(topLevelType) == false
+								&& typeOneToOne.equals(topLevelType) == false
+								|| element.getParent() instanceof CtAnnotation<?> == false) {
+								return false;
+							}
+							return ((CtAnnotation<?>) element.getParent()).getValues().containsKey("optional") == false;
 						}
-						return ((CtAnnotation<?>) element.getParent()).getValues().containsKey("optional") == false;
-					}
-				});
-		if (list.isEmpty()) {
-			return;
+					});
+			if (list.isEmpty()) {
+				return;
+			}
+			fail(list.stream().map(l -> "You must set ToOne with optional in " + mapPathElementToString(l.getParent()))
+					.distinct().collect(Collectors.joining(System.lineSeparator())));
+
+		} catch (final NoClassDefFoundError e) {
+			/**
+			 * Spring Boot 2 compat
+			 */
 		}
-		fail(list.stream().map(l -> "You must set ToOne with optional in " + mapPathElementToString(l.getParent()))
-				.distinct().collect(Collectors.joining(System.lineSeparator())));
 	}
 
 	@Test
 	public void xToManyMustNotUseEAGER() {
-		final var typeOneToMany = typeFactory.get(OneToMany.class).getReference();
-		final var typeManyToMany = typeFactory.get(ManyToMany.class).getReference();
+		try {
+			final var typeOneToMany = typeFactory.get(OneToMany.class).getReference();
+			final var typeManyToMany = typeFactory.get(ManyToMany.class).getReference();
 
-		final var list = launcher.getFactory().Package().getRootPackage().getElements(
-				new AbstractFilter<CtTypeReference<?>>() {
-					@Override
-					public boolean matches(final CtTypeReference<?> element) {
-						final var topLevelType = element.getTopLevelType();
-						if (typeOneToMany.equals(topLevelType) == false && typeManyToMany.equals(topLevelType) == false
-							|| element.getParent() instanceof CtAnnotation<?> == false) {
-							return false;
+			final var list = launcher.getFactory().Package().getRootPackage().getElements(
+					new AbstractFilter<CtTypeReference<?>>() {
+						@Override
+						public boolean matches(final CtTypeReference<?> element) {
+							final var topLevelType = element.getTopLevelType();
+							if (typeOneToMany.equals(topLevelType) == false
+								&& typeManyToMany.equals(topLevelType) == false
+								|| element.getParent() instanceof CtAnnotation<?> == false) {
+								return false;
+							}
+							final var values = ((CtAnnotation<?>) element.getParent()).getValues();
+							if (values.containsKey("fetch") == false) {
+								return false;
+							}
+							return values.get("fetch").toString().endsWith("EAGER");
 						}
-						final var values = ((CtAnnotation<?>) element.getParent()).getValues();
-						if (values.containsKey("fetch") == false) {
-							return false;
-						}
-						return values.get("fetch").toString().endsWith("EAGER");
-					}
-				});
-		if (list.isEmpty()) {
-			return;
+					});
+			if (list.isEmpty()) {
+				return;
+			}
+			fail(list.stream().map(l -> "You must set ToMany with not EAGER in " + mapPathElementToString(l
+					.getParent()))
+					.distinct().collect(Collectors.joining(System.lineSeparator())));
+		} catch (final NoClassDefFoundError e) {
+			/**
+			 * Spring Boot 2 compat
+			 */
 		}
-		fail(list.stream().map(l -> "You must set ToMany with not EAGER in " + mapPathElementToString(l.getParent()))
-				.distinct().collect(Collectors.joining(System.lineSeparator())));
 	}
 
 	@Test
@@ -372,35 +319,6 @@ public class CheckPolicy {
 				.collect(Collectors.joining(System.lineSeparator())));
 	}
 
-	public static String mapPathElementToString(final CtElement element) {
-		final var path = element.getPath();
-		if (path instanceof CtPathImpl == false) {
-			return path.toString();
-		}
-		final var pathElements = ((CtPathImpl) path).getElements();
-		return pathElements.stream().map(pE -> {
-			if (pE instanceof CtRolePathElement == false) {
-				return pE.toString() + " ";
-			}
-
-			final var rRPE = (CtRolePathElement) pE;
-			if (rRPE.getRole().equals(CtRole.SUB_PACKAGE) || rRPE.getRole().equals(
-					CtRole.CONTAINED_TYPE)) {
-				return rRPE.getArguments().get("name") + ".";
-			} else if (rRPE.getRole().equals(CtRole.METHOD)) {
-				final var pos = element.getPosition();
-				return rRPE.getArguments().get("signature")
-					   + " " + pos.getFile().getName()
-					   + ":" + pos.getLine();
-			} else if (rRPE.getRole().equals(CtRole.FIELD)) {
-				final var pos = element.getPosition();
-				return rRPE.getArguments().get("name")
-					   + " (" + pos.getFile().getName() + ":" + pos.getLine() + ")";
-			}
-			return "";
-		}).collect(Collectors.joining());
-	}
-
 	@Test
 	public void notOldJunitAssert() {
 		checkClassNotPresent("org.junit.Assert", "Don't use old Junit Assert");
@@ -456,111 +374,6 @@ public class CheckPolicy {
 		notFlatJobKitEngineOutsideTests(SRC_TEST_JAVA);
 	}
 
-	public static void checkClassNotPresent(final String classBaseName, final String reason) {
-		final var classesWithBadImports = classesByImported.keySet().stream()
-				.filter(cl -> cl.getQualifiedName().startsWith(classBaseName))
-				.flatMap(cl -> classesByImported.get(cl).stream()
-						.distinct().map(t -> t.getQualifiedName()
-											 + " class must not import "
-											 + cl.getQualifiedName()
-											 + " class"))
-				.collect(Collectors.toUnmodifiableSet());
-
-		if (classesWithBadImports.isEmpty() == false) {
-			throw new BadImportClass(classBaseName,
-					reason,
-					classesWithBadImports.stream().collect(Collectors.joining(", ")));
-		}
-	}
-
-	public static void checkClassNotPresent(final String classBaseName,
-											final String allowSourceDir,
-											final String reason) {
-		final var appRootDirSize = new File("").getAbsolutePath().length() + 1;
-		final var classesWithBadImports = classesByImported.keySet().stream()
-				.filter(cl -> cl.getQualifiedName().startsWith(classBaseName))
-				.flatMap(cl -> classesByImported.get(cl).stream()
-						.distinct()
-						.filter(c -> {
-							final var basePath = c.getPosition()
-									.getFile()
-									.getAbsolutePath()
-									.substring(appRootDirSize)
-									.replace("\\", "/");
-							return basePath.startsWith(allowSourceDir) == false;
-						})
-						.map(t -> t.getQualifiedName()
-								  + " class must not import "
-								  + cl.getQualifiedName()
-								  + " class"))
-				.collect(Collectors.toUnmodifiableSet());
-
-		if (classesWithBadImports.isEmpty() == false) {
-			throw new BadImportClass(classBaseName,
-					reason,
-					classesWithBadImports.stream().collect(Collectors.joining(", ")));
-		}
-	}
-
-	public static List<CtType<?>> searchByAnnotationInClass(final Class<?> annotation) {// NOSONAR S1452
-		final var annotationType = typeFactory.get(annotation).getReference();
-		return launcher.getFactory().Package().getRootPackage().getElements(
-				new AbstractFilter<CtType<?>>() {
-					@Override
-					public boolean matches(final CtType<?> element) {
-						return element.getAnnotations().stream()
-								.anyMatch(a -> a.getType().equals(annotationType));
-					}
-				});
-	}
-
-	public static List<CtType<?>> searchByAnnotationInClass(final String annotationName) {// NOSONAR S1452
-		Class<?> annotation;
-		try {
-			annotation = Class.forName(annotationName);
-		} catch (final ClassNotFoundException e) {
-			return List.of();
-		}
-		return searchByAnnotationInClass(annotation);
-	}
-
-	static boolean ensureContainInPackageName(final String packageName, final String searched) {
-		final var dot = packageName.lastIndexOf('.');
-		if (dot == -1) {
-			return packageName.startsWith(searched) || packageName.endsWith(searched);
-		} else {
-			final var subpackageName = packageName.substring(dot + 1);
-			return subpackageName.startsWith(searched) || subpackageName.endsWith(searched);
-		}
-	}
-
-	public static void assertInPackageName(final CtType<?> item, final String packageNameContain) {
-		final var ctPackage = (CtPackageImpl) item.getParent();
-		final var packageName = ctPackage.getQualifiedName();
-		if (ensureContainInPackageName(packageName, packageNameContain) == false) {
-			throw new BadClassLocation(item.getQualifiedName(), packageName, packageNameContain);
-		}
-	}
-
-	public static void assertSpringBootStereotypeInItsPackage(final String annotationName,
-															  final String packageNameContain) {
-		final var bclList = searchByAnnotationInClass(annotationName)
-				.stream()
-				.map(item -> {
-					try {
-						assertInPackageName(item, packageNameContain);
-						return null;
-					} catch (final BadClassLocation bcl) {
-						return bcl;
-					}
-				})
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
-		if (bclList.isEmpty() == false) {
-			throw new BadClassLocation(bclList);
-		}
-	}
-
 	@Test
 	public void springBootControllersInControllerPackage() {
 		assertSpringBootStereotypeInItsPackage(CONTROLLER_ANNOTATION_NAME, CONTROLLER_BASE_PKG);
@@ -584,111 +397,6 @@ public class CheckPolicy {
 	@Test
 	public void springBootServicesInServicePackage() {
 		assertSpringBootStereotypeInItsPackage(SERVICE_ANNOTATION_NAME, SERVICE_BASE_PKG);
-	}
-
-	public static List<CtPackage> searchPackagesByPackageName(final String packageNameContain) {
-		return launcher.getFactory().Package().getRootPackage().getElements(
-				new AbstractFilter<CtPackage>() {
-					@Override
-					public boolean matches(final CtPackage element) {
-						return ensureContainInPackageName(element.getQualifiedName(), packageNameContain);
-					}
-				});
-	}
-
-	public static List<CtType<?>> searchClassesByPackages(final List<CtPackage> packages, // NOSONAR S1452
-														  final Predicate<CtType<?>> inPackageFilter) {
-		final var packagesSet = packages.stream().distinct().collect(toUnmodifiableSet());
-		return launcher.getFactory().Package().getRootPackage().getElements(
-				new AbstractFilter<CtType<?>>() {
-					@Override
-					public boolean matches(final CtType<?> element) {
-						return packagesSet.contains(element.getParent())
-							   && inPackageFilter.test(element);
-					}
-				});
-	}
-
-	public static Predicate<CtType<?>> getIsAnnotatedClass(final Class<?> annotation) { // NOSONAR S1452
-		final var annotationType = typeFactory.get(annotation).getReference();
-		return element -> element.getAnnotations()
-				.stream()
-				.anyMatch(a -> a.getType().equals(annotationType));
-
-	}
-
-	private static final Predicate<CtType<?>> getClassFilter(final boolean mustAbstract) {
-		return t -> {
-			if (CtClassImpl.class.equals(t.getClass()) == false) {
-				return false;
-			}
-			final var c = (CtClassImpl<?>) t;
-			return c.isAbstract() == mustAbstract
-				   && c.isAnonymous() == false
-				   && c.isClass() == true
-				   && c.isLocalType() == false
-				   && c.isPrivate() == false
-				   && c.isStatic() == false
-				   && c.isEnum() == false
-				   && c.isImplicit() == false;
-		};
-	}
-
-	public enum CtTypeCat {
-		CLASS(getClassFilter(false)),
-		ABSTRACT(getClassFilter(true)),
-		INTERFACE(t -> CtInterfaceImpl.class.equals(t.getClass()));
-
-		private final Predicate<CtType<?>> filter;
-
-		CtTypeCat(final Predicate<CtType<?>> filter) {
-			this.filter = filter;
-		}
-	}
-
-	public static boolean assertClassesByPackageIsAnnotated(final String packageNameContain,
-															final String annotationName,
-															final CtTypeCat typeCat) {
-		return assertClassesByPackageIsAnnotated(packageNameContain, annotationName, typeCat, t -> false);
-	}
-
-	private static final Predicate<CtType<?>> filterTestAllowed = t -> {
-		final var name = t.getQualifiedName();
-		return name.toLowerCase().endsWith("test")
-			   || name.endsWith("IT")
-			   || name.endsWith("UT")
-			   || name.endsWith("TT");
-	};
-
-	public static boolean assertClassesByPackageIsAnnotated(final String packageNameContain,
-															final String annotationName,
-															final CtTypeCat typeCat,
-															final Predicate<CtType<?>> filterOutAllowed) {
-		Class<?> annotation;
-		try {
-			annotation = Class.forName(annotationName);
-		} catch (final ClassNotFoundException e) {
-			return true;
-		}
-		final var packages = searchPackagesByPackageName(packageNameContain);
-		final var predicateIsAnnotated = getIsAnnotatedClass(annotation);
-
-		final var noAnnotatedList = searchClassesByPackages(packages,
-				predicateIsAnnotated.negate().and(typeCat.filter))
-						.stream()
-						.filter(filterOutAllowed.negate())
-						.filter(filterTestAllowed.negate())
-						.collect(toUnmodifiableList());
-
-		if (noAnnotatedList.isEmpty()) {
-			return true;
-		}
-		final var bclList = noAnnotatedList.stream()
-				.map(item -> new BadClassAnnotation(item.getQualifiedName(),
-						((CtPackageImpl) item.getParent()).getQualifiedName(),
-						packageNameContain))
-				.collect(Collectors.toUnmodifiableList());
-		throw new BadClassAnnotation(bclList);
 	}
 
 	@Test
@@ -721,10 +429,15 @@ public class CheckPolicy {
 	public void springBootNotEntityInEntityPackage() {
 		Class<?> mappedSuperclassAnnotation;
 		try {
-			mappedSuperclassAnnotation = Class.forName("jakarta.persistence.MappedSuperclass");
+			mappedSuperclassAnnotation = Class.forName("javax.persistence.Entity");
 		} catch (final ClassNotFoundException e) {
-			return;
+			try {
+				mappedSuperclassAnnotation = Class.forName("jakarta.persistence.MappedSuperclass");
+			} catch (final ClassNotFoundException e2) {
+				return;
+			}
 		}
+
 		assertClassesByPackageIsAnnotated(ENTITY_BASE_PKG, ENTITY_ANNOTATION_NAME, CLASS,
 				getIsAnnotatedClass(mappedSuperclassAnnotation));
 	}
@@ -732,35 +445,24 @@ public class CheckPolicy {
 	@Test
 	public void springBootNotRepositoryInRepositoryPackage() {
 		assertClassesByPackageIsAnnotated(REPOSITORY_BASE_PKG, REPOSITORY_ANNOTATION_NAME, INTERFACE,
-				t -> t.getQualifiedName().toLowerCase().endsWith("dao"));
+				t -> {
+					if (t.getQualifiedName().toLowerCase().endsWith("dao")) {
+						return true;
+					}
+					try {
+						final var fullClass = Class.forName(t.getQualifiedName());
+						return Stream.of(fullClass.getInterfaces())
+								.map(Class::getName)
+								.anyMatch(validRepositoriesClassesNames::contains);
+					} catch (final ClassNotFoundException e) {
+						throw new IllegalCallerException(e);
+					}
+				});
 	}
 
 	@Test
 	public void springBootNotServiceInServicePackage() {
 		assertClassesByPackageIsAnnotated(SERVICE_BASE_PKG, SERVICE_ANNOTATION_NAME, CLASS);
-	}
-
-	public static boolean assertClassesByPackageIsRightType(final String packageNameContain,
-															final Collection<CtTypeCat> typeCatAllowed) {
-		return assertClassesByPackageIsRightType(packageNameContain, typeCatAllowed, t -> false);
-	}
-
-	public static boolean assertClassesByPackageIsRightType(final String packageNameContain,
-															final Collection<CtTypeCat> typeCatAllowed,
-															final Predicate<CtType<?>> filterOutAllowed) {
-		final var packages = searchPackagesByPackageName(packageNameContain);
-		final Predicate<CtType<?>> inPackageFilter = t -> typeCatAllowed.stream()
-				.anyMatch(tC -> tC.filter.test(t));
-		final var badTypeList = searchClassesByPackages(packages,
-				inPackageFilter.negate().and(filterTestAllowed.negate()).and(filterOutAllowed.negate()));
-
-		if (badTypeList.isEmpty()) {
-			return true;
-		}
-		final var bclList = badTypeList.stream()
-				.map(CtTypeInformation::getQualifiedName)
-				.collect(toUnmodifiableList());
-		throw new AssertionError("Invalid type in package " + packageNameContain + ":" + bclList);
 	}
 
 	@Test
@@ -788,7 +490,8 @@ public class CheckPolicy {
 
 	@Test
 	public void springBootNotClassOrInterfaceInServicePackage() {
-		assertClassesByPackageIsRightType(SERVICE_BASE_PKG, List.of(INTERFACE, CLASS, ABSTRACT));
+		assertClassesByPackageIsRightType(SERVICE_BASE_PKG, List.of(INTERFACE, CLASS,
+				CtTypeCat.ABSTRACT));
 	}
 
 	/**
@@ -876,16 +579,8 @@ public class CheckPolicy {
 		}
 	}
 
-	private Stream<CtMethod<?>> hasNotAnnotationMethod(final List<CtMethod<?>> methods,
-													   final Set<String> annotationNames) {
-		return methods.stream()
-				.filter(m -> m.getAnnotations().stream()
-						.noneMatch(d -> annotationNames.stream().anyMatch(aN -> d.toString().contains(aN))));
-	}
-
 	@Test
 	public void springBootRESTControllerMethodsMustReturnResponseEntity() {
-
 		final var typeObject = typeFactory.get(Object.class);
 		final var allObjectMethodNames = typeObject.getAllMethods().stream()
 				.map(CtMethod::getSimpleName)

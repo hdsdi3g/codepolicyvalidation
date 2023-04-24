@@ -19,8 +19,8 @@ package tv.hd3g.commons.codepolicyvalidation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.typeFactory;
-import static tv.hd3g.commons.codepolicyvalidation.CheckPolicy.CtTypeCat.CLASS;
+import static tv.hd3g.commons.codepolicyvalidation.CtTypeCat.CLASS;
+import static tv.hd3g.commons.codepolicyvalidation.Policies.typeFactory;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,14 +37,17 @@ import tv.hd3g.commons.codepolicyvalidation.springboot.ok.entity.AnEntity;
 
 class CheckPolicySpringBootTest {
 
+	static Policies p;
+
 	@BeforeAll
 	static void globalInit() {
-		CheckPolicy.globalInit("src/test/java/tv/hd3g/commons/codepolicyvalidation/springboot/ok");
+		Policies.globalInit("src/test/java/tv/hd3g/commons/codepolicyvalidation/springboot/ok");
+		p = new Policies();
 	}
 
 	@Test
 	void searchByAnnotationinClass() {
-		final var list = CheckPolicy.searchByAnnotationInClass(SpringBootApplication.class);
+		final var list = p.searchByAnnotationInClass(SpringBootApplication.class);
 		assertFalse(list.isEmpty());
 		assertEquals(typeFactory.get(SpringBootApp.class).getReference(), list.get(0).getReference());
 	}
@@ -52,65 +55,65 @@ class CheckPolicySpringBootTest {
 	@Test
 	void assertInPackageName() {
 		final var itemOk = typeFactory.get(AController.class);
-		CheckPolicy.assertInPackageName(itemOk, "controller");
+		p.assertInPackageName(itemOk, "controller");
 
 		final var itemKo = typeFactory.get(AnEntity.class);
 		Assertions.assertThrows(BadClassLocation.class,
-		        () -> CheckPolicy.assertInPackageName(itemKo, "controller"));
+				() -> p.assertInPackageName(itemKo, "controller"));
 	}
 
 	@Test
 	void assertSpringBootStereotypeInItsPackage() {
-		CheckPolicy.assertSpringBootStereotypeInItsPackage(Controller.class.getName(), "controller");
+		p.assertSpringBootStereotypeInItsPackage(Controller.class.getName(), "controller");
 	}
 
 	@Test
 	void assertSpringBootStereotypeInItsPackage_reverseCheck() {
 		final var annotationName = SpringBootApplication.class.getName();
 		Assertions.assertThrows(BadClassLocation.class,
-		        () -> CheckPolicy.assertSpringBootStereotypeInItsPackage(annotationName, "controller"));
+				() -> p.assertSpringBootStereotypeInItsPackage(annotationName, "controller"));
 	}
 
 	@Test
 	void assertSpringBootStereotypeInItsPackage_WithoutSpring() {
-		CheckPolicy.assertSpringBootStereotypeInItsPackage("invalid.package.name", "controller");
+		p.assertSpringBootStereotypeInItsPackage("invalid.package.name", "controller");
 	}
 
 	@Test
 	void searchClassByPackageName() {
-		final var list = CheckPolicy.searchPackagesByPackageName("ok");
+		final var list = p.searchPackagesByPackageName("ok");
 		assertEquals(1, list.size());
 		assertEquals("tv.hd3g.commons.codepolicyvalidation.springboot.ok", list.get(0).getQualifiedName());
 	}
 
 	@Test
 	void searchClassesByPackages() {
-		final var listP = CheckPolicy.searchPackagesByPackageName("ok");
-		final var listC = CheckPolicy.searchClassesByPackages(listP, element -> true);
+		final var listP = p.searchPackagesByPackageName("ok");
+		final var listC = p.searchClassesByPackages(listP, element -> true);
 		assertEquals(3, listC.size());
 		assertTrue(listC.stream()
-		        .map(CtType::getQualifiedName)
-		        .anyMatch(qn -> qn.equalsIgnoreCase("tv.hd3g.commons.codepolicyvalidation.springboot.ok.SimpleClass")));
+				.map(CtType::getQualifiedName)
+				.anyMatch(qn -> qn.equalsIgnoreCase("tv.hd3g.commons.codepolicyvalidation.springboot.ok.SimpleClass")));
 	}
 
 	@Test
 	void getIsAnnotatedClass() {
-		final var predicate = CheckPolicy.getIsAnnotatedClass(Controller.class);
+		final var predicate = p.getIsAnnotatedClass(Controller.class);
 		assertTrue(predicate.test(typeFactory.get(AController.class)));
 		assertFalse(predicate.test(typeFactory.get(AnEntity.class)));
 	}
 
 	@Test
 	void assertClassesByPackageIsAnnotated() {
-		assertTrue(CheckPolicy.assertClassesByPackageIsAnnotated("foobar", "this.is.not.found", CLASS));
+		assertTrue(p.assertClassesByPackageIsAnnotated("foobar", "this.is.not.found", CLASS));
 
-		final var predicate = CheckPolicy.getIsAnnotatedClass(RestController.class);
-		assertTrue(CheckPolicy.assertClassesByPackageIsAnnotated("controller", Controller.class.getName(), CLASS,
-		        predicate));
+		final var predicate = p.getIsAnnotatedClass(RestController.class);
+		assertTrue(p.assertClassesByPackageIsAnnotated("controller", Controller.class.getName(), CLASS,
+				predicate));
 
 		final var serviceClassName = Service.class.getName();
 		Assertions.assertThrows(BadClassAnnotation.class,
-		        () -> CheckPolicy.assertClassesByPackageIsAnnotated("controller", serviceClassName, CLASS));
+				() -> p.assertClassesByPackageIsAnnotated("controller", serviceClassName, CLASS));
 	}
 
 }

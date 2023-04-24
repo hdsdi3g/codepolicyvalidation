@@ -28,7 +28,7 @@ class CheckPolicyOkTest {
 
 	@BeforeAll
 	static void globalInit() {
-		CheckPolicy.globalInit(
+		Policies.globalInit(
 				"src/test/java/tv/hd3g/commons/codepolicyvalidation/ok",
 				"src/main/java");
 		checkPolicy = new CheckPolicy();
@@ -56,15 +56,15 @@ class CheckPolicyOkTest {
 
 	@Test
 	void ensureContainInPackageName() {
-		assertTrue(CheckPolicy.ensureContainInPackageName("cc", "cc"));
-		assertTrue(CheckPolicy.ensureContainInPackageName("zzzcc", "cc"));
-		assertTrue(CheckPolicy.ensureContainInPackageName("cczzz", "cc"));
-		assertFalse(CheckPolicy.ensureContainInPackageName("zzzcczzz", "cc"));
+		assertTrue(checkPolicy.ensureContainInPackageName("cc", "cc"));
+		assertTrue(checkPolicy.ensureContainInPackageName("zzzcc", "cc"));
+		assertTrue(checkPolicy.ensureContainInPackageName("cczzz", "cc"));
+		assertFalse(checkPolicy.ensureContainInPackageName("zzzcczzz", "cc"));
 
-		assertTrue(CheckPolicy.ensureContainInPackageName("aa.bb.cc", "cc"));
-		assertTrue(CheckPolicy.ensureContainInPackageName("aa.bb.zzzcc", "cc"));
-		assertTrue(CheckPolicy.ensureContainInPackageName("aa.bb.cczzz", "cc"));
-		assertFalse(CheckPolicy.ensureContainInPackageName("aa.bb.zzzcczzz", "cc"));
+		assertTrue(checkPolicy.ensureContainInPackageName("aa.bb.cc", "cc"));
+		assertTrue(checkPolicy.ensureContainInPackageName("aa.bb.zzzcc", "cc"));
+		assertTrue(checkPolicy.ensureContainInPackageName("aa.bb.cczzz", "cc"));
+		assertFalse(checkPolicy.ensureContainInPackageName("aa.bb.zzzcczzz", "cc"));
 	}
 
 	@Test
