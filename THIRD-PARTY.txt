@@ -1,8 +1,5 @@
 
-Lists of 26 third-party dependencies.
-     (The Apache Software License, Version 2.0) Jackson-annotations (com.fasterxml.jackson.core:jackson-annotations:2.12.2 - http://github.com/FasterXML/jackson)
-     (The Apache Software License, Version 2.0) Jackson-core (com.fasterxml.jackson.core:jackson-core:2.12.2 - https://github.com/FasterXML/jackson-core)
-     (The Apache Software License, Version 2.0) jackson-databind (com.fasterxml.jackson.core:jackson-databind:2.12.2 - http://github.com/FasterXML/jackson)
+Lists of 23 third-party dependencies.
      (LGPL) JSAP (com.martiansoftware:jsap:2.1 - http://www.martiansoftware.com/jsap/)
      (Apache License, Version 2.0) Apache Commons IO (commons-io:commons-io:2.8.0 - https://commons.apache.org/proper/commons-io/)
      (CeCILL-C) Spoon Core (fr.inria.gforge.spoon:spoon-core:8.4.0 - http://spoon.gforge.inria.fr/)
