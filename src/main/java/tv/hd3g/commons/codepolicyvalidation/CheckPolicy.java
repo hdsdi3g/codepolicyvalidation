@@ -427,19 +427,12 @@ public class CheckPolicy extends Policies {
 
 	@Test
 	public void springBootNotEntityInEntityPackage() {
-		Class<?> mappedSuperclassAnnotation;
 		try {
-			mappedSuperclassAnnotation = Class.forName("javax.persistence.Entity");
-		} catch (final ClassNotFoundException e) {
-			try {
-				mappedSuperclassAnnotation = Class.forName("jakarta.persistence.MappedSuperclass");
-			} catch (final ClassNotFoundException e2) {
-				return;
-			}
+			final var mappedSuperclassAnnotation = Class.forName("jakarta.persistence.MappedSuperclass");
+			assertClassesByPackageIsAnnotated(ENTITY_BASE_PKG, ENTITY_ANNOTATION_NAME, CLASS,
+					getIsAnnotatedClass(mappedSuperclassAnnotation));
+		} catch (final ClassNotFoundException e2) {
 		}
-
-		assertClassesByPackageIsAnnotated(ENTITY_BASE_PKG, ENTITY_ANNOTATION_NAME, CLASS,
-				getIsAnnotatedClass(mappedSuperclassAnnotation));
 	}
 
 	@Test

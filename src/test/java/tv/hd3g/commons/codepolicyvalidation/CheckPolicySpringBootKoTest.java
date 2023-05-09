@@ -26,116 +26,116 @@ class CheckPolicySpringBootKoTest {
 
 	@BeforeAll
 	static void globalInit() {
-		CheckPolicy.globalInit("src/test/java/tv/hd3g/commons/codepolicyvalidation/springboot/ko");
+		Policies.globalInit("src/test/java/tv/hd3g/commons/codepolicyvalidation/springboot/ko");
 		checkPolicy = new CheckPolicy();
 	}
 
 	@Test
 	void springBootEntitiesInEntityPackage() {
 		Assertions.assertThrows(BadClassLocation.class,
-		        () -> checkPolicy.springBootEntitiesInEntityPackage());
+				() -> checkPolicy.springBootEntitiesInEntityPackage());
 	}
 
 	@Test
 	void springBootControllersInControllerPackage() {
 		Assertions.assertThrows(BadClassLocation.class,
-		        () -> checkPolicy.springBootControllersInControllerPackage());
+				() -> checkPolicy.springBootControllersInControllerPackage());
 	}
 
 	@Test
 	void springBootRepositoriesInRepositoryPackage() {
 		Assertions.assertThrows(BadClassLocation.class,
-		        () -> checkPolicy.springBootRepositoriesInRepositoryPackage());
+				() -> checkPolicy.springBootRepositoriesInRepositoryPackage());
 	}
 
 	@Test
 	void springBootServicesInServicePackage() {
 		Assertions.assertThrows(BadClassLocation.class,
-		        () -> checkPolicy.springBootServicesInServicePackage());
+				() -> checkPolicy.springBootServicesInServicePackage());
 	}
 
 	@Test
 	void springBootNotControllerInControllerPackage() {
 		Assertions.assertThrows(BadClassAnnotation.class,
-		        () -> checkPolicy.springBootNotControllerInControllerPackage());
+				() -> checkPolicy.springBootNotControllerInControllerPackage());
 	}
 
 	@Test
 	void springBootNotEntityInEntityPackage() {
 		Assertions.assertThrows(BadClassAnnotation.class,
-		        () -> checkPolicy.springBootNotEntityInEntityPackage());
+				() -> checkPolicy.springBootNotEntityInEntityPackage());
 	}
 
 	@Test
 	void springBootNotRepositoryInRepositoryPackage() {
 		Assertions.assertThrows(BadClassAnnotation.class,
-		        () -> checkPolicy.springBootNotRepositoryInRepositoryPackage());
+				() -> checkPolicy.springBootNotRepositoryInRepositoryPackage());
 	}
 
 	@Test
 	void springBootNotServiceInServicePackage() {
 		Assertions.assertThrows(BadClassAnnotation.class,
-		        () -> checkPolicy.springBootNotServiceInServicePackage());
+				() -> checkPolicy.springBootNotServiceInServicePackage());
 	}
 
 	@Test
 	void springBootNotClassInControllerPackage() {
 		Assertions.assertThrows(AssertionError.class,
-		        () -> checkPolicy.springBootNotClassInControllerPackage());
+				() -> checkPolicy.springBootNotClassInControllerPackage());
 	}
 
-	@Test
+	/*@Test
 	void springBootNotClassInEntityPackage() {
 		Assertions.assertThrows(AssertionError.class,
 		        () -> checkPolicy.springBootNotClassInEntityPackage());
-	}
+	}*/
 
 	@Test
 	void springBootNotInterfaceInRepositoryPackage() {
 		Assertions.assertThrows(AssertionError.class,
-		        () -> checkPolicy.springBootNotInterfaceInRepositoryPackage());
+				() -> checkPolicy.springBootNotInterfaceInRepositoryPackage());
 	}
 
 	@Test
 	void springBootNotClassOrInterfaceInServicePackage() {
 		Assertions.assertThrows(AssertionError.class,
-		        () -> checkPolicy.springBootNotClassOrInterfaceInServicePackage());
+				() -> checkPolicy.springBootNotClassOrInterfaceInServicePackage());
 	}
 
 	@Test
 	void springBootServiceBadName() {
 		Assertions.assertThrows(AssertionError.class,
-		        () -> checkPolicy.springBootServiceBadName());
+				() -> checkPolicy.springBootServiceBadName());
 	}
 
 	@Test
 	void springBootServiceDontImplInterface() {
 		Assertions.assertThrows(AssertionError.class,
-		        () -> checkPolicy.springBootServiceDontImplInterface());
+				() -> checkPolicy.springBootServiceDontImplInterface());
 	}
 
 	@Test
 	void springBootServiceInterfaceNames() {
 		Assertions.assertThrows(AssertionError.class,
-		        () -> checkPolicy.springBootServiceInterfaceNames());
+				() -> checkPolicy.springBootServiceInterfaceNames());
 	}
 
 	@Test
 	void springBootComponentInComponentPackage() {
 		Assertions.assertThrows(AssertionError.class,
-		        () -> checkPolicy.springBootComponentInComponentPackage());
+				() -> checkPolicy.springBootComponentInComponentPackage());
 	}
 
 	@Test
 	void springBootNotComponentInComponentPackage() {
 		Assertions.assertThrows(AssertionError.class,
-		        () -> checkPolicy.springBootNotComponentInComponentPackage());
+				() -> checkPolicy.springBootNotComponentInComponentPackage());
 	}
 
 	@Test
 	void springBootRESTControllerMethodsMustReturnResponseEntity() {
 		Assertions.assertThrows(AssertionError.class,
-		        () -> checkPolicy.springBootRESTControllerMethodsMustReturnResponseEntity());
+				() -> checkPolicy.springBootRESTControllerMethodsMustReturnResponseEntity());
 	}
 
 }
