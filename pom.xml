@@ -17,11 +17,11 @@
         <maven.compiler.target>17</maven.compiler.target>
         <java.version>17</java.version>
 
-        <spoon.version>8.4.0</spoon.version>
+        <spoon.version>10.3.0</spoon.version>
         <jakarta.version>3.0.0</jakarta.version>
         <commons-compress.version>1.21</commons-compress.version>
         <junit.version>5.8.2</junit.version>
-        <log4j2.version>2.17.2</log4j2.version>
+        <log4j2.version>2.20.0</log4j2.version>
         <license-maven-plugin.version>2.0.0</license-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.12</nexus-staging-maven-plugin.version>
         <maven.jacoco.version>0.8.8</maven.jacoco.version>
