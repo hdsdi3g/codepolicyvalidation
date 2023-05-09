@@ -1,6 +1,6 @@
 # CodePolicyValidation
 
-Static Java 11 code validator using Spoon (http://spoon.gforge.inria.fr/).
+Static Java 17 code validator using Spoon (http://spoon.gforge.inria.fr/).
 
 It's still in alpha.
 
