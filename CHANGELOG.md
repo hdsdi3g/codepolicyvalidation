@@ -1,5 +1,9 @@
 # CodePolicyValidation changelog
 
+## 2.2.0
+
+Fix troubles with Spring Boot 3 #40
+
 ## 2.1.0
 
 Remove check Repository annotation presence for repositories class on springBootNotRepositoryInRepositoryPackage #38
