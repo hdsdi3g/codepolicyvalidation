@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import org.apache.commons.collections.ThisClassIsFromAnOlderPackage;
 import org.apache.commons.lang.ThisClassIsFromAn2OlderPackage;
+import org.apache.logging.log4j.Log4jLogger;
 import org.junit.Test;
 import org.junit.runner.Result;
 
@@ -78,4 +79,7 @@ class BadClass {// NOSONAR S3577
 		Optional.of("");
 	}
 
+	String e() {
+		return Log4jLogger.SOMETHING;
+	}
 }

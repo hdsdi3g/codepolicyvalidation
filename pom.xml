@@ -21,7 +21,8 @@
         <jakarta.version>3.0.0</jakarta.version>
         <commons-compress.version>1.21</commons-compress.version>
         <junit.version>5.8.2</junit.version>
-        <log4j2.version>2.20.0</log4j2.version>
+        <slf4j.version>2.0.7</slf4j.version>
+        <logback.version>1.4.7</logback.version>
         <license-maven-plugin.version>2.0.0</license-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.12</nexus-staging-maven-plugin.version>
         <maven.jacoco.version>0.8.8</maven.jacoco.version>
@@ -42,14 +43,6 @@
             <artifactId>spoon-core</artifactId>
             <version>${spoon.version}</version>
             <exclusions>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-to-slf4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-api</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
@@ -76,15 +69,15 @@
             <version>${commons-compress.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j2.version}</version>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

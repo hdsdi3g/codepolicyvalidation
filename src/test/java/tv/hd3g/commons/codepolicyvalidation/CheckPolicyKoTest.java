@@ -27,7 +27,7 @@ class CheckPolicyKoTest {
 
 	@BeforeAll
 	static void globalInit() {
-		CheckPolicy.globalInit("src/test/java/tv/hd3g/commons/codepolicyvalidation/ko");
+		Policies.globalInit("src/test/java/tv/hd3g/commons/codepolicyvalidation/ko");
 		checkPolicy = new CheckPolicy();
 	}
 
@@ -113,6 +113,12 @@ class CheckPolicyKoTest {
 	void testNotCommonsLang2_use3() {
 		Assertions.assertThrows(BadImportClass.class,
 				() -> checkPolicy.notCommonsLang2Use3());
+	}
+
+	@Test
+	void testNotLog4j() {
+		Assertions.assertThrows(BadImportClass.class,
+				() -> checkPolicy.notLog4j());
 	}
 
 	@Test

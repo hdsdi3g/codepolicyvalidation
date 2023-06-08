@@ -354,6 +354,11 @@ public class CheckPolicy extends Policies {
 		checkClassNotPresent("org.apache.commons.collections.", "Use commons collection 4");
 	}
 
+	@Test
+	public void notLog4j() {
+		checkClassNotPresent("org.apache.logging.log4j.", "Don't use directly log4j");
+	}
+
 	public void notFlatJavaMailSenderOutsideTests(final String allowSourceDir) {
 		checkClassNotPresent("tv.hd3g.mailkit.utility.FlatJavaMailSender", allowSourceDir,
 				"Never use it outside " + allowSourceDir);
@@ -431,7 +436,7 @@ public class CheckPolicy extends Policies {
 			final var mappedSuperclassAnnotation = Class.forName("jakarta.persistence.MappedSuperclass");
 			assertClassesByPackageIsAnnotated(ENTITY_BASE_PKG, ENTITY_ANNOTATION_NAME, CLASS,
 					getIsAnnotatedClass(mappedSuperclassAnnotation));
-		} catch (final ClassNotFoundException e2) {
+		} catch (final ClassNotFoundException e2) {// NOSONAR S108
 		}
 	}
 
