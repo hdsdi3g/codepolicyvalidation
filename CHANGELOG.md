@@ -1,5 +1,9 @@
 # CodePolicyValidation changelog
 
+## 3.0.0
+
+Exclude log4j from use, and replace it by SLF4J and logback #43
+
 ## 2.2.0
 
 Fix troubles with Spring Boot 3 #40
