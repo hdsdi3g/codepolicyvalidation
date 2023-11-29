@@ -22,7 +22,7 @@
         <commons-compress.version>1.21</commons-compress.version>
         <junit.version>5.8.2</junit.version>
         <slf4j.version>2.0.7</slf4j.version>
-        <logback.version>1.4.7</logback.version>
+        <logback.version>1.4.12</logback.version>
         <license-maven-plugin.version>2.0.0</license-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.12</nexus-staging-maven-plugin.version>
         <maven.jacoco.version>0.8.8</maven.jacoco.version>
