@@ -1,5 +1,9 @@
 # CodePolicyValidation changelog
 
+## 3.1.0
+
+Switch to Java 17, update deps (Spoon, Jakarta, Commons Compress, Slf4j, Logback).
+
 ## 3.0.0
 
 Exclude log4j from use, and replace it by SLF4J and logback #43
