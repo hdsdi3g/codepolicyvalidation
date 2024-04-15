@@ -1,5 +1,9 @@
 # CodePolicyValidation changelog
 
+## 3.1.1
+
+Correct publish problems.
+
 ## 3.1.0
 
 Switch to Java 17, update deps (Spoon, Jakarta, Commons Compress, Slf4j, Logback).
