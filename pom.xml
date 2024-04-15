@@ -20,6 +20,7 @@
         <spoon.version>11.0.0</spoon.version>
         <jakarta.version>3.1.0</jakarta.version>
         <commons-compress.version>1.26.1</commons-compress.version>
+        <commons-io.version>2.16.1</commons-io.version>
         <junit.version>5.10.2</junit.version>
         <slf4j.version>2.0.13</slf4j.version>
         <logback.version>1.5.5</logback.version>
@@ -28,11 +29,11 @@
         <maven.jacoco.version>0.8.8</maven.jacoco.version>
         <maven-source-plugin.version>2.2.1</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
-        <maven-deploy-plugin.version>3.0.0-M1</maven-deploy-plugin.version>
+        <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.0.0-M4</maven-surefire-plugin.version>
-        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
-        <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <maven-gpg-plugin.version>3.2.3</maven-gpg-plugin.version>
+        <maven-enforcer-plugin.version>3.4.1</maven-enforcer-plugin.version>
         <requireMavenVersion>3.5.4</requireMavenVersion>
     </properties>
 
@@ -47,16 +48,16 @@
                     <artifactId>jackson-databind</artifactId>
                 </exclusion>
                 <exclusion>
-                	<groupId>javax.inject</groupId>
-                	<artifactId>javax.inject</artifactId>
+                    <groupId>javax.inject</groupId>
+                    <artifactId>javax.inject</artifactId>
                 </exclusion>
                 <exclusion>
-                	<groupId>org.slf4j</groupId>
-                	<artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
                 </exclusion>
                 <exclusion>
-                	<groupId>commons-io</groupId>
-                	<artifactId>commons-io</artifactId>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -75,11 +76,16 @@
             <artifactId>commons-compress</artifactId>
             <version>${commons-compress.version}</version>
             <exclusions>
-            	<exclusion>
-            		<groupId>commons-io</groupId>
-            		<artifactId>commons-io</artifactId>
-            	</exclusion>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -87,11 +93,16 @@
             <version>${logback.version}</version>
             <scope>test</scope>
             <exclusions>
-            	<exclusion>
-            		<groupId>org.slf4j</groupId>
-            		<artifactId>slf4j-api</artifactId>
-            	</exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
     </dependencies>
     <organization>
