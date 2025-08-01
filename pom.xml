@@ -19,7 +19,7 @@
 
         <spoon.version>11.0.0</spoon.version>
         <jakarta.version>3.1.0</jakarta.version>
-        <commons-compress.version>1.26.1</commons-compress.version>
+        <commons-compress.version>1.28.0</commons-compress.version>
         <commons-io.version>2.16.1</commons-io.version>
         <junit.version>5.10.2</junit.version>
         <slf4j.version>2.0.13</slf4j.version>
