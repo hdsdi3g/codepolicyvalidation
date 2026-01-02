@@ -17,7 +17,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <java.version>17</java.version>
 
-        <spoon.version>11.0.0</spoon.version>
+        <spoon.version>11.3.0</spoon.version>
         <jakarta.version>3.1.0</jakarta.version>
         <commons-compress.version>1.26.1</commons-compress.version>
         <commons-io.version>2.16.1</commons-io.version>
